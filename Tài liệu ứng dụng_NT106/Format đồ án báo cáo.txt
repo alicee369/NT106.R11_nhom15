@@ -1,0 +1,24 @@
+﻿Lời cảm ơn
+* Mục Lục
+* Giới thiệu về đồ án
+* Danh mục hình ảnh
+* Danh mục bảng biểu
+* Danh mục từ viết tắt
+* Chương 1: giới thiệu 
+* Giới thiệu tổng quan về đề tài, ngữ cảnh(đã từng ai nghiên cứu chưa, tốt chỗ nào, ch tốt?) nội dung, phạm vi(đối tượng nào?), mục tiêu(đầu ra mong muốn của đề tài), lý do chọn(tổng hợp lý do ở trên),...
+* Chương 2 : Cơ sở lý thuyết
+* Lý thuyết nền tảng ( dùng giải thuật, mô hình, thư viện, công nghệ gì) - chỉ cần tóm gọn thôi kh cần gthieu công nghệ thông dụng
+* Chương 3:
+* Phân tích, thiết kế hệ thống(bao gồm bnhieu chức năng, cách sử dụng csdl, module gắn kết thế nào? Ví dụ : user - nhân viên, user - khách hàng, ….)
+* Chương 4: 
+* Hình ảnh, số liệu, kết quả của đề tài
+* Chương 5: Kiểm thử đề tài
+* Kiểm nhiều điều kiện mtrg khác nhau
+* Làm kĩ
+* Chương 6:kết luận và xu hướng phát triển
+* Kết luận - tốt hay ch
+* Xu huong phat trien do an
+
+
+* Tài liệu tham khảo (note vào cuối) 
+* CHuẩn IEF(Internal Factor Evaluation)

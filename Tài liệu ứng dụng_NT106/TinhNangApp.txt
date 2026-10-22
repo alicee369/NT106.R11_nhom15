@@ -1,0 +1,26 @@
+﻿1. Nhóm Công cụ Tập trung & Quản lý Thời gian (Core Features)
+
+
+* Đồng hồ Pomodoro linh hoạt: Cho phép tùy chỉnh các khung giờ học/nghỉ. Cung cấp chế độ cửa sổ thu nhỏ (Mini-player) và ghim trên cùng (Always on top) để dễ dàng theo dõi trên màn hình desktop.
+* Lịch & Thời gian biểu: Nhập lịch học, lịch thi, và các deadline, hỗ trợ chế độ xem đa dạng theo ngày, tuần, hoặc tháng.
+* Ghi chú: Có thể dùng để lưu nguồn tài liệu học, todolist,...
+* Hệ thống nhắc nhở: Gửi thông báo giờ học, giờ giải lao, và báo động các deadline sắp tới.
+
+
+2. Nhóm Gamification & Tạo động lực (Đặc trưng cốt lõi)
+
+
+* Tạo kế hoạch mục tiêu: Thiết lập các chiến dịch học tập cá nhân hóa (ví dụ: "Chiến dịch ôn thi C++ trong 30 ngày" hoặc "Code 100 giờ") với thanh tiến độ đi kèm.
+* Thống kê trực quan: Tổng hợp thời gian học và vẽ biểu đồ cột theo tuần/tháng.
+* Thành tựu & Phần thưởng: Mở khóa Huy hiệu (Badge) khi người dùng hoàn thành các cột mốc (như duy trì chuỗi học 7 ngày, hoàn thành 100 phiên Pomodoro).
+* Tính điểm GPA: Ước lượng mục tiêu GPA môn học cụ thể.
+3. Nhóm Tương tác Xã hội (Social & Community)
+* Chia sẻ & Kết nối: Cơ chế tạo mã code để mời bạn bè cùng tham gia các chiến dịch học tập, tạo thành các nhóm "đôi bạn cùng tiến".
+* Bảng xếp hạng (Leaderboard): Xếp hạng tổng số giờ học tập theo tuần hoặc tháng, áp dụng cho cả bảng xếp hạng nội bộ nhóm bạn bè lẫn cộng đồng người dùng toàn hệ thống.
+
+
+4. Nhóm Quản trị Hệ thống
+
+
+* Đăng ký & Hồ sơ người dùng: Tạo tài khoản/ đăng nhập, quản lý thông tin cá nhân và trưng bày bộ sưu tập huy hiệu đã đạt được.
+-

@@ -1,0 +1,401 @@
+﻿Đặc tả Usecase ứng dụng quản lí học tập - NT106
+
+
+
+
+Lưu ý - Luồng ngoại lệ chung: Khi mất mạng hoặc Server không phản hồi (Timeout), hệ thống sẽ hiện thông báo lỗi và hủy thao tác hiện tại. 
+
+
+Phần 1. Nhóm Công cụ Tập trung & Quản lý Thời gian
+
+
+1.1. Nhóm Use Case: Đồng hồ Pomodoro
+UC1: Chạy đồng hồ Pomodoro
+* Tác nhân: Người dùng.
+* Mô tả: Khởi chạy chu kỳ đếm ngược thời gian để quản lý phiên học và phiên nghỉ ngơi.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+  1. Người dùng yêu cầu bắt đầu Pomodoro và chọn một Kế hoạch học tập (tùy chọn).
+   2. Hệ thống đếm ngược thời gian học theo thiết lập.
+   3. Khi hết giờ, hệ thống ghi nhận số phút đã học và đồng bộ lên máy chủ để làm dữ liệu cho Use Case 16 (xem thống kê trực quan) .
+   4. Hệ thống cộng thời lượng học vào thanh tiến độ của Kế hoạch học tập (nếu có chọn ở bước 1).
+   5. Hệ thống tự động chuyển sang đếm ngược thời gian giải lao.
+   6. Khi hết giờ giải lao, hệ thống tự động quay lại bước 2.
+*   Luồng ngoại lệ:
+*  2a. Người dùng chọn Tạm dừng (Pause): Hệ thống tạm ngưng đếm ngược.
+*     2b. Người dùng chọn Hủy (Stop): Hệ thống kết thúc đếm ngược, chuyển tiếp sang bước 3 và 4 (để ghi nhận số phút đã học thực tế), sau đó thoát use case.
+* Hậu điều kiện: Trạng thái phiên học được ghi nhận vào hệ thống.
+
+
+UC2: Tùy chỉnh khung giờ Pomodoro
+* Tác nhân: Người dùng.
+* Mô tả: Thay đổi linh hoạt thời lượng cho mỗi phiên học và phiên nghỉ.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng cung cấp thông số thời gian mới cho giờ học/giờ nghỉ.
+   2. Hệ thống kiểm tra và lưu lại cấu hình mới.
+* Luồng ngoại lệ:
+   * 2a. Thông số không hợp lệ: Hệ thống từ chối lưu, yêu cầu nhập lại.
+* Hậu điều kiện: Khung thời gian mới được áp dụng cho các phiên Pomodoro tiếp theo.
+
+
+UC3: Chuyển đổi chế độ hiển thị Mini-player
+* Tác nhân: Người dùng.
+* Mô tả: Bật/tắt chế độ cửa sổ thu nhỏ (Mini-player) và ghim trên cùng.
+* Tiền điều kiện: Đồng hồ Pomodoro đang hoạt động.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu thu nhỏ cửa sổ.
+   2. Hệ thống chuyển đổi sang giao diện Mini-player và ghim nổi (Always on top) trên các ứng dụng khác.
+* Luồng ngoại lệ:
+   * 2a. Máy tính từ chối cấp quyền ghim: Hệ thống thu nhỏ bình thường và báo lỗi.
+* Hậu điều kiện: Giao diện đồng hồ hiển thị ở chế độ thu nhỏ.
+
+
+1.2. Nhóm Use Case: Lịch & Thời gian biểu
+UC4: Xem thời gian biểu
+* Tác nhân: Người dùng.
+* Mô tả: Xem danh sách các sự kiện học tập theo ngày, tuần hoặc tháng.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng chọn chế độ xem thời gian biểu.
+   2. Hệ thống tổng hợp và hiển thị danh sách sự kiện tương ứng.
+* Luồng ngoại lệ:
+   * 2a. Không có sự kiện: Hệ thống hiển thị lịch trống.
+* Hậu điều kiện: Danh sách sự kiện được hiển thị cho người dùng.
+
+
+UC5: Thêm sự kiện lịch
+* Tác nhân: Người dùng.
+* Mô tả: Thêm mới lịch học, lịch thi hoặc deadline vào thời gian biểu.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng cung cấp thông tin sự kiện.
+   2. Hệ thống kiểm tra tính hợp lệ của thông tin.
+   3. Hệ thống lưu sự kiện vào lịch.
+* Luồng ngoại lệ:
+   * 2a. Thông tin không hợp lệ: Hệ thống báo lỗi, yêu cầu nhập lại.
+* Hậu điều kiện: Sự kiện mới được bổ sung vào thời gian biểu.
+
+
+UC6: Sửa sự kiện lịch
+* Tác nhân: Người dùng.
+* Mô tả: Chỉnh sửa thông tin của các lịch học, lịch thi hoặc deadline đã tạo.
+* Tiền điều kiện: Người dùng đã có ít nhất một sự kiện trong thời gian biểu.
+* Luồng sự kiện chính:
+   1. Người dùng chọn sự kiện và cung cấp thông tin cần sửa.
+   2. Hệ thống kiểm tra tính hợp lệ của thông tin mới.
+   3. Hệ thống cập nhật dữ liệu sự kiện.
+* Luồng ngoại lệ:
+   * 2a. Thông tin mới không hợp lệ: Hệ thống từ chối lưu và báo lỗi.
+* Hậu điều kiện: Sự kiện được cập nhật thông tin.
+UC7: Xóa sự kiện lịch
+* Tác nhân: Người dùng.
+* Mô tả: Xóa bỏ một sự kiện khỏi thời gian biểu.
+* Tiền điều kiện: Người dùng đã có ít nhất một sự kiện.
+* Luồng sự kiện chính:
+   1. Người dùng chọn sự kiện và yêu cầu xóa.
+   2. Hệ thống hiển thị thông báo xác nhận.
+   3. Người dùng xác nhận đồng ý.
+   4. Hệ thống loại bỏ sự kiện.
+* Luồng ngoại lệ:
+   * 3a. Người dùng chọn "Hủy": Hệ thống hủy thao tác và thoát use case.
+* Hậu điều kiện: Sự kiện bị loại bỏ hoàn toàn khỏi hệ thống.
+
+
+1.3. Nhóm Use Case: Ghi chú & Nhắc nhở
+UC8: Xem danh sách ghi chú
+* Tác nhân: Người dùng.
+* Mô tả: Xem danh sách các ghi chú đã lưu.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu xem danh sách ghi chú.
+   2. Hệ thống trích xuất và hiển thị danh sách.
+* Luồng ngoại lệ:
+   * 2a. Danh sách trống: Hệ thống gợi ý tạo ghi chú mới.
+* Hậu điều kiện: Danh sách ghi chú được hiển thị.
+
+
+UC9: Thêm ghi chú
+* Tác nhân: Người dùng.
+* Mô tả: Tạo một ghi chú mới để lưu nguồn tài liệu học tập hoặc todolist.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu thêm và nhập nội dung ghi chú.
+   2. Hệ thống kiểm tra tính hợp lệ của nội dung.
+   3. Hệ thống lưu lại ghi chú mới.
+* Luồng ngoại lệ:
+   * 2a. Nội dung rỗng: Hệ thống từ chối lưu và thoát use case.
+* Hậu điều kiện: Một ghi chú mới được tạo thành công.
+
+
+UC10: Sửa ghi chú
+* Tác nhân: Người dùng.
+* Mô tả: Chỉnh sửa nội dung của ghi chú hoặc cập nhật trạng thái todolist.
+* Tiền điều kiện: Người dùng đã có ít nhất một ghi chú.
+* Luồng sự kiện chính:
+   1. Người dùng chọn ghi chú và cập nhật nội dung mới.
+   2. Hệ thống kiểm tra và lưu lại thay đổi.
+* Luồng ngoại lệ:
+   * 2a. Nội dung bị xóa trắng: Hệ thống chuyển sang luồng Xóa ghi chú (UC11).
+* Hậu điều kiện: Nội dung ghi chú được cập nhật.
+
+
+UC11: Xóa ghi chú
+* Tác nhân: Người dùng.
+* Mô tả: Xóa bỏ một ghi chú không còn cần thiết.
+* Tiền điều kiện: Người dùng đã có ít nhất một ghi chú.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu xóa một ghi chú.
+   2. Hệ thống hiển thị thông báo xác nhận.
+   3. Người dùng xác nhận đồng ý.
+   4. Hệ thống loại bỏ ghi chú.
+* Luồng ngoại lệ:
+   * 3a. Người dùng chọn "Hủy": Hệ thống hủy thao tác và thoát use case.
+* Hậu điều kiện: Ghi chú bị xóa khỏi hệ thống.
+
+
+UC12: Cấu hình hệ thống nhắc nhở
+* Tác nhân: Người dùng.
+* Mô tả: Thiết lập gửi thông báo cho giờ học, giờ giải lao và deadline.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng thiết lập cấu hình thông báo (bật/tắt, thời gian báo trước).
+   2. Hệ thống kiểm tra tính hợp lệ của thời gian.
+   3. Hệ thống lưu cấu hình và lên lịch kích hoạt.
+* Luồng ngoại lệ:
+   * 2a. Thời gian thiết lập trong quá khứ: Hệ thống báo lỗi và từ chối đặt lịch.
+* Hậu điều kiện: Hệ thống nhắc nhở được cập nhật cấu hình mới.
+
+
+Phần 2: Nhóm Gamification & Tạo động lực
+
+
+2.1. Nhóm Use Case: Quản lý Mục tiêu & kế hoạch học tập
+
+
+UC13: Tạo kế hoạch học tập
+* Tác nhân: Người dùng.
+* Mô tả: Thiết lập các chiến dịch học tập cá nhân hóa kèm theo thanh tiến độ.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu tạo kế hoạch mới.
+   2. Người dùng cung cấp thông tin kế hoạch - tên kế hoạch, mục tiêu (số phút muốn học).
+   3. Hệ thống ghi nhận, khởi tạo thanh tiến độ ở mức 0% và hiển thị kế hoạch mới vào danh sách.
+* Luồng ngoại lệ:
+   * 2a. Thông tin để trống: Hệ thống từ chối lưu và thông báo lỗi.
+* Hậu điều kiện: Một chiến dịch học tập mới được khởi tạo thành công trên hệ thống.
+
+
+UC14: Chỉnh sửa kế hoạch học tập
+* Tác nhân: Người dùng.
+* Mô tả: Thay đổi thông tin mục tiêu của một kế hoạch đang diễn ra.
+* Tiền điều kiện: Người dùng đang có ít nhất một chiến dịch học tập tồn tại.
+* Luồng sự kiện chính:
+   1. Người dùng chọn kế hoạch và yêu cầu chỉnh sửa.
+   2. Người dùng cung cấp thông tin mới.
+   3. Hệ thống kiểm tra, cập nhật thông tin và thông báo thành công.
+* Luồng ngoại lệ:
+   * 2a. Thông tin để trống: Hệ thống từ chối lưu và yêu cầu nhập lại.
+* Hậu điều kiện: Thông tin kế hoạch được cập nhật mới.
+UC15: Xóa kế hoạch học tập
+* Tác nhân: Người dùng.
+* Mô tả: Hủy bỏ một kế hoạch đang diễn ra.
+* Tiền điều kiện: Người dùng đang có ít nhất một kế hoạch học tập tồn tại.
+* Luồng sự kiện chính:
+   1. Người dùng chọn kế hoạch và yêu cầu xóa.
+   2. Hệ thống hiển thị thông báo xác nhận.
+   3. Người dùng xác nhận đồng ý xóa.
+   4. Hệ thống loại bỏ kế hoạch và cập nhật lại danh sách.
+* Luồng ngoại lệ:
+   * 3a. Người dùng từ chối xác nhận: Hệ thống hủy thao tác và giữ nguyên kế hoạch.
+* Hậu điều kiện: kế hoạch bị loại bỏ khỏi hệ thống.
+
+
+2.2. Nhóm Use Case: Thống kê
+UC16: Xem thống kê trực quan
+* Tác nhân: Người dùng.
+* Mô tả: Xem tổng hợp thời gian học(phút) được hiển thị dưới dạng biểu đồ cột (Bar chart) theo ngày và tuần.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu xem thống kê học tập.
+   2. Hệ thống tổng hợp dữ liệu thời gian học của người dùng.
+   3. Hệ thống vẽ và hiển thị biểu đồ cột tương ứng với dữ liệu đã tổng hợp.
+* Luồng ngoại lệ:
+   * 2a. Chưa có dữ liệu thời gian học: Hệ thống hiển thị biểu đồ trống kèm thông báo khuyến khích bắt đầu học tập.
+* Hậu điều kiện: Dữ liệu thống kê được trực quan hóa và hiển thị cho người dùng.
+
+
+2.3. Nhóm Use Case: Thành tựu & Phần thưởng
+UC17: Mở khóa Huy hiệu (Badge)
+* Tác nhân: Hệ thống.
+* Mô tả: mở khóa Huy hiệu khi người dùng hoàn thành các cột mốc cụ thể.
+* Tiền điều kiện: Người dùng vừa hoàn thành một phiên học hoặc đạt đủ một cột mốc.
+* Luồng sự kiện chính:
+   1. Hệ thống ghi nhận kết quả học tập mới nhất của người dùng.
+   2. Hệ thống đối chiếu kết quả với các điều kiện nhận thưởng.
+   3. Hệ thống thay đổi trạng thái Huy hiệu sang "Đã mở khóa".
+   4. Hệ thống gửi thông báo chúc mừng thành tựu cho người dùng.
+* Luồng ngoại lệ:
+   * 2a. Kết quả học tập chưa đủ để vượt qua cột mốc mới: Hệ thống chỉ ghi nhận tiến độ thông thường mà không hiển thị thông báo thưởng.
+* Hậu điều kiện: Bộ sưu tập Huy hiệu của người dùng được cập nhật.
+
+
+2.4. Nhóm Use Case: Quản lý Điểm số
+UC18: Tính điểm và ước lượng GPA
+* Tác nhân: Người dùng.
+* Mô tả: Ước lượng mục tiêu GPA cho các môn học cụ thể.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng cung cấp điểm số hiện tại, tỷ trọng phần trăm và mục tiêu GPA mong muốn.
+   2. Hệ thống tính toán dựa trên dữ liệu đầu vào.
+   3. Hệ thống hiển thị số điểm cần đạt để hoàn thành mục tiêu GPA.
+* Luồng ngoại lệ:
+   * 1a. Dữ liệu nhập không hợp lệ (nhập chữ cái, điểm số âm, hoặc tổng tỷ trọng > 100%): Hệ thống báo lỗi định dạng và yêu cầu nhập lại.
+* Hậu điều kiện: Kết quả ước lượng điểm số được cung cấp cho người dùng.
+
+
+Phần 3: Nhóm Tương tác Xã hội (Social & Community)
+
+
+3.1. Nhóm Use Case: Kết nối & Nhóm học tập
+UC19: Tạo mã mời tham gia nhóm
+* Tác nhân: Người dùng.
+* Mô tả: Tạo mã code để mời bạn bè tham gia vào chiến dịch học tập chung nhằm tạo nhóm "đôi bạn cùng tiến".
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu tạo mã mời cho một chiến dịch học tập.
+   2. Hệ thống phát sinh một mã code duy nhất đại diện cho chiến dịch đó.
+   3. Hệ thống hiển thị mã code để người dùng sao chép và chia sẻ.
+* Luồng ngoại lệ: Không có.
+* Hậu điều kiện: Mã code được tạo và sẵn sàng để chia sẻ.
+
+
+UC20: Tham gia nhóm học tập
+* Tác nhân: Người dùng.
+* Mô tả: Sử dụng mã code được chia sẻ để tham gia vào nhóm học tập cùng bạn bè.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng nhập mã code do bạn bè cung cấp.
+   2. Hệ thống xác thực sự tồn tại của mã code.
+   3. Hệ thống thêm người dùng vào nhóm học tập tương ứng và thông báo thành công.
+* Luồng ngoại lệ:
+   * 2a. Mã code không tồn tại: Hệ thống từ chối thao tác và thông báo lỗi.
+* Hậu điều kiện: Người dùng trở thành thành viên của nhóm học tập đó.
+
+
+3.2. Nhóm Use Case: Bảng xếp hạng
+
+
+UC21: Xem bảng xếp hạng (Leaderboard)
+* Tác nhân: Người dùng.
+* Mô tả: Xem xếp hạng tổng số giờ học tập của người dùng trên hệ thống.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu xem bảng xếp hạng.
+   2. Hệ thống tính toán tổng giờ học tập của các tài khoản và sắp xếp thứ tự từ cao xuống thấp.
+   3. Hệ thống hiển thị danh sách xếp hạng.
+* Luồng ngoại lệ:
+   * 2a. Chưa có dữ liệu học tập nào: Bảng xếp hạng hiển thị trạng thái trống.
+* Hậu điều kiện: Danh sách xếp hạng được hiển thị cho người dùng.
+
+
+Phần 4: Xác Thực và Quản lí hồ sơ
+
+
+UC22: Tạo tài khoản (Đăng ký)
+* Tác nhân: Người dùng.
+* Mô tả: Đăng ký tài khoản mới để sử dụng ứng dụng.
+* Tiền điều kiện: Người dùng chưa đăng nhập hệ thống.
+* Luồng sự kiện chính:
+   1. Người dùng cung cấp thông tin đăng ký (Tên đăng nhập, Mật khẩu).
+   2. Hệ thống ghi nhận tài khoản mới và thông báo đăng ký thành công.
+* Luồng ngoại lệ:
+   * 2a. Tên đăng nhập đã tồn tại: Hệ thống từ chối tạo và thông báo lỗi yêu cầu người dùng chọn tên khác.
+* Hậu điều kiện: Một tài khoản mới được tạo thành công trong hệ thống.
+
+
+UC23: Đăng nhập
+* Tác nhân: Người dùng.
+* Mô tả: Người dùng xác thực để truy cập vào hệ thống.
+* Tiền điều kiện: Người dùng đã có tài khoản.
+* Luồng sự kiện chính:
+   1. Người dùng cung cấp Tên đăng nhập và Mật khẩu.
+   2. Hệ thống xác thực thông tin trùng khớp với tài khoản đã lưu.
+   3. Hệ thống cấp quyền truy cập và tải dữ liệu cá nhân của người dùng.
+* Luồng ngoại lệ:
+   * 2a. Thông tin không chính xác: Hệ thống từ chối truy cập và thông báo lỗi.
+* Hậu điều kiện: Người dùng được đăng nhập thành công vào hệ thống.
+
+
+UC24: Đăng xuất
+* Tác nhân: Người dùng.
+* Mô tả: Kết thúc phiên làm việc hiện tại của người dùng.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu đăng xuất.
+   2. Hệ thống chấm dứt phiên làm việc và thu hồi quyền truy cập.
+* Luồng ngoại lệ: Không có.
+* Hậu điều kiện: Người dùng trở về trạng thái chưa đăng nhập.
+
+
+4.2. Nhóm Use Case: Quản lý Thông tin cá nhân (Hồ sơ người dùng)
+UC25: Xem hồ sơ người dùng
+* Tác nhân: Người dùng.
+* Mô tả: Xem các thông tin cá nhân hiện tại trong hồ sơ.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu xem hồ sơ cá nhân.
+   2. Hệ thống trích xuất và hiển thị các thông tin liên quan của người dùng đó.
+* Luồng ngoại lệ: Không có.
+* Hậu điều kiện: Thông tin cá nhân được cung cấp cho người dùng.
+
+
+UC26: Cập nhật thông tin cá nhân
+* Tác nhân: Người dùng.
+* Mô tả: Cho phép người dùng chỉnh sửa thông tin hiển thị hoặc đổi mật khẩu trong hồ sơ cá nhân.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng cung cấp các thông tin cá nhân mới cần thay đổi (ví dụ: Tên hiển thị, Mật khẩu mới).
+   2. Hệ thống cập nhật bản ghi và thông báo thành công.
+* Luồng ngoại lệ:
+   * 2a. Xác thực sai mật khẩu cũ (khi đổi mật khẩu): Hệ thống từ chối lưu thay đổi.
+* Hậu điều kiện: Hồ sơ người dùng được cập nhật với thông tin mới.
+
+
+UC27: Xóa tài khoản (Xóa vật lý)
+* Tác nhân: Người dùng.
+* Mô tả: Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu liên quan khỏi hệ thống.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu xóa tài khoản.
+   2. Hệ thống hiển thị thông báo xác nhận (ví dụ: "Bạn có chắc chắn muốn xóa tài khoản và toàn bộ dữ liệu không?").
+   3. Người dùng xác nhận đồng ý.
+   4. Hệ thống thực hiện xóa vật lý toàn bộ dữ liệu của tài khoản.
+   5. Hệ thống thông báo hoàn tất và đăng xuất người dùng.
+* Luồng ngoại lệ:
+   * 3a. Người dùng từ chối xác nhận (chọn "Hủy" hoặc đóng thông báo): Hệ thống hủy bỏ thao tác và giữ nguyên trạng thái tài khoản.
+* Hậu điều kiện: Tài khoản và mọi dữ liệu liên quan bị xóa hoàn toàn khỏi hệ thống.
+
+
+4.3. Nhóm Use Case: Quản lý bộ sưu tập huy hiệu
+UC28: Xem bộ sưu tập huy hiệu
+* Tác nhân: Người dùng.
+* Mô tả: Xem danh sách toàn bộ các huy hiệu (Badge) đã đạt được.
+* Tiền điều kiện: Người dùng đang ở trạng thái đăng nhập.
+* Luồng sự kiện chính:
+   1. Người dùng yêu cầu xem danh sách huy hiệu.
+   2. Hệ thống tổng hợp và hiển thị danh sách huy hiệu, phân biệt rõ trạng thái đã mở khóa và chưa mở khóa.
+* Luồng ngoại lệ: Không có.
+* Hậu điều kiện: Danh sách huy hiệu cá nhân được cung cấp cho người dùng.
+
+
+UC29: Trưng bày huy hiệu nổi bật
+* Tác nhân: Người dùng.
+* Mô tả: Người dùng chọn huy hiệu yêu thích để trưng bày trên hồ sơ.
+* Tiền điều kiện: Người dùng đang đăng nhập và đã sở hữu ít nhất một huy hiệu.
+* Luồng sự kiện chính:
+   1. Người dùng chọn huy hiệu muốn trưng bày.
+   2. Hệ thống ghi nhận trạng thái và hiển thị huy hiệu đó ở vị trí nổi bật trên hồ sơ cá nhân.
+* Luồng ngoại lệ:
+   * 2a. Số lượng huy hiệu chọn vượt quá mức cho phép trưng bày: Hệ thống thông báo lỗi.
+* Hậu điều kiện: Huy hiệu được chọn hiển thị công khai trên hồ sơ của người dùng.
