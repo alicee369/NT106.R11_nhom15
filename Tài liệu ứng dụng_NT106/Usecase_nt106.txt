@@ -1,7 +1,7 @@
 ﻿Đặc tả Usecase ứng dụng quản lí học tập - NT106
 
 
-
+//Dùng web services
 
 Lưu ý - Luồng ngoại lệ chung: Khi mất mạng hoặc Server không phản hồi (Timeout), hệ thống sẽ hiện thông báo lỗi và hủy thao tác hiện tại. 
 
