@@ -1,3 +1,11 @@
+# Tài liệu API - Ứng dụng Quản lý học tập NT106
+
+--------------------------------------------------
+### UC22: Tạo tài khoản
+- URL Endpoint: /api/auth/register
+- Method: POST
+- Header: Không
+--------------------------------------------------
 //Tạo tk
     //Client:
 {
@@ -31,6 +39,13 @@
   "message": "Tên đăng nhập này đã có người sử dụng. Vui lòng chọn tên khác.",
   "data": null
 }
+
+--------------------------------------------------
+### UC23: Đăng nhập
+- URL Endpoint: /api/auth/login
+- Method: POST
+- Header: Không
+--------------------------------------------------
 //Đăng nhập:
     //Client:
 {
@@ -64,6 +79,13 @@
   "message": "Tên đăng nhập hoặc mật khẩu không chính xác.",
   "data": null
 }
+
+--------------------------------------------------
+### UC24: Đăng xuất
+- URL Endpoint: /api/auth/logout
+- Method: POST
+- Header: Authorization: Bearer <token>
+--------------------------------------------------
 //Đăng xuất
     //Client:
 {
@@ -80,6 +102,13 @@
   "message": "Đã đăng xuất thành công.",
   "data": null
 }
+
+--------------------------------------------------
+### UC25: Xem hồ sơ người dùng
+- URL Endpoint: /api/profile
+- Method: POST
+- Header: Authorization: Bearer <token>
+--------------------------------------------------
 //Xem hồ sơ người dùng
     //Client
 {
@@ -101,6 +130,13 @@
     "joinDate": time
   }
 }
+
+--------------------------------------------------
+### UC26: Cập nhật thông tin cá nhân
+- URL Endpoint: /api/profile/update
+- Method: POST
+- Header: Authorization: Bearer <token>
+--------------------------------------------------
 //Update thông tin cá nhân
     //Client
 {
@@ -133,6 +169,13 @@
   "message": "Mật khẩu cũ không chính xác. Không thể đổi mật khẩu mới.",
   "data": null
 }
+
+--------------------------------------------------
+### UC27: Xóa tài khoản
+- URL Endpoint: /api/profile/delete
+- Method: POST
+- Header: Authorization: Bearer <token>
+--------------------------------------------------
 //Xóa tài khoản
     //Client:
 {
