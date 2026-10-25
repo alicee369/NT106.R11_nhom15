@@ -19,7 +19,7 @@ def build_response(action: str, req_id: int, success: bool, error_code: Optional
         "data": data
     }
 
-# UC25: Xem hồ sơ người dùng[cite: 1, 3]
+# UC25: Xem hồ sơ người dùng
 @router.post("")
 async def get_profile(payload: RequestPayload, authorization: Optional[str] = Header(None)):
     return build_response(
@@ -36,7 +36,7 @@ async def get_profile(payload: RequestPayload, authorization: Optional[str] = He
         }
     )
 
-# UC26: Cập nhật thông tin cá nhân[cite: 1, 3]
+# UC26: Cập nhật thông tin cá nhân
 @router.post("/update")
 async def update_profile(payload: RequestPayload, authorization: Optional[str] = Header(None)):
     display_name = payload.data.get("displayName")
@@ -49,7 +49,7 @@ async def update_profile(payload: RequestPayload, authorization: Optional[str] =
         data={"displayName": display_name}
     )
 
-# UC27: Xóa tài khoản[cite: 1, 3]
+# UC27: Xóa tài khoản
 @router.post("/delete")
 async def delete_profile(payload: RequestPayload, authorization: Optional[str] = Header(None)):
     return build_response(
