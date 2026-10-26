@@ -1,26 +1,24 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import CheckConstraint, DateTime
 from sqlmodel import Field, SQLModel
 
 
 def utc_now() -> datetime:
-    return datetime.now(timezone.UTC)
+    return datetime.now(UTC)
 
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
     __table_args__ = (
-        CheckConstraint("LEN(username) > 0", name="ck_users_username_not_empty"),
-        CheckConstraint(
-            "LEN(password_hash) > 0", name="ck_users_password_hash_not_empty"
-        ),
+        CheckConstraint("length(username) > 0", name="ck_usr_name"),
+        CheckConstraint("length(password) > 0", name="ck_usr_pwd"),
     )
 
     id: int | None = Field(default=None, primary_key=True)
     username: str = Field(max_length=50, unique=True, index=True)
     display_name: str = Field(max_length=100)
-    password_hash: str = Field(max_length=255)
+    password: str = Field(max_length=255)
     created_at: datetime = Field(
         default_factory=utc_now,
         sa_type=DateTime(timezone=True),
@@ -28,10 +26,8 @@ class User(SQLModel, table=True):
 
 
 class LoginSession(SQLModel, table=True):
-    __tablename__ = "login_sessions"
-    __table_args__ = (
-        CheckConstraint("expires_at > created_at", name="ck_login_sessions_expiry"),
-    )
+    __tablename__ = "login_session"
+    __table_args__ = (CheckConstraint("expires_at > created_at", name="ck_sess_exp"),)
 
     id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.id", index=True)
@@ -50,29 +46,27 @@ class LoginSession(SQLModel, table=True):
 class PomodoroSettings(SQLModel, table=True):
     __tablename__ = "pomodoro_settings"
     __table_args__ = (
-        CheckConstraint("focus_minutes > 0", name="ck_pomodoro_focus_positive"),
-        CheckConstraint("break_minutes > 0", name="ck_pomodoro_break_positive"),
+        CheckConstraint("focus_min > 0", name="ck_pomo_focus"),
+        CheckConstraint("break_min > 0", name="ck_pomo_break"),
         CheckConstraint(
-            "long_break_minutes IS NULL OR long_break_minutes > 0",
-            name="ck_pomodoro_long_break_positive",
+            "lbreak_min IS NULL OR lbreak_min > 0",
+            name="ck_pomo_lbreak",
         ),
     )
     user_id: int = Field(foreign_key="users.id", primary_key=True)
-    focus_minutes: int = Field(default=25)
-    break_minutes: int = Field(default=5)
-    long_break_minutes: int | None = Field(default=None)
+    focus_min: int = Field(default=25)
+    break_min: int = Field(default=5)
+    lbreak_min: int | None = Field(default=None)
 
 
 class StudyPlan(SQLModel, table=True):
     __tablename__ = "study_plans"
-    __table_args__ = (
-        CheckConstraint("target_minutes > 0", name="ck_study_plans_target_positive"),
-    )
+    __table_args__ = (CheckConstraint("target_min > 0", name="ck_plans_target"),)
 
     id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.id", index=True)
     name: str = Field(max_length=150)
-    target_minutes: int
+    target_min: int
     created_at: datetime = Field(
         default_factory=utc_now,
         sa_type=DateTime(timezone=True),
