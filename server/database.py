@@ -1,22 +1,17 @@
-from sqlalchemy.engine import URL
+import os
+
 from sqlmodel import Session, create_engine
 
-SERVER = r"THANHMANPH"
-DATABASE = "doan_nt106"
+SUPABASE_URL = "postgresql+psycopg2://postgres.spzczfwxdjtguaurwnct:Doan_NT106.@aws-0-ap-south-1.pooler.supabase.com:5432/postgres"
 
-connection_url = URL.create(
-    "mssql+mssqlpython",
-    host=SERVER,
-    database=DATABASE,
-    query={
-        "trusted_connection": "yes",
-        "trust_server_certificate": "yes",
-    },
-)
+DATABASE_URL = os.getenv("DATABASE_URL", SUPABASE_URL)
 
-engine = create_engine(connection_url, echo=True)
+engine = create_engine(DATABASE_URL, echo=True)
 
 
 def get_session():
     with Session(engine) as session:
         yield session
+
+
+# pw_supabase: Doan_NT106@
