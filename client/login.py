@@ -106,13 +106,44 @@ class LoginWindow(QWidget):
         self.worker.start()
 
     def on_login_response(self, response):
+        print("Phản hồi đăng nhập từ server:", response) # tạm check để coi bug ở đâu
+
         self.login_button.setEnabled(True)
         self.login_button.setText("Đăng nhập")
-        if response.get("success"):
-            token = response.get("data", {}).get("token")
+
+        if response.get("success") is True:
+            data = response.get("data")
+
+            if not isinstance(data, dict):
+                QMessageBox.critical(
+                    self,
+                    "Lỗi đăng nhập",
+                    "Dữ liệu trả về từ máy chủ không hợp lệ."
+                )
+                return
+
+            token = data.get("token")
+
+            if not token:
+                QMessageBox.critical(
+                    self,
+                    "Lỗi đăng nhập",
+                    "Máy chủ không trả về token đăng nhập."
+                )
+                return
+
             self.login_success.emit(token)
+
         else:
-            QMessageBox.critical(self, "Đăng nhập thất bại", response.get("message"))
+            message = response.get(
+                "message",
+                "Tên đăng nhập hoặc mật khẩu không chính xác."
+            )
+            QMessageBox.warning(
+                self,
+                "Đăng nhập thất bại",
+                message
+            )
 
     def on_login_error(self, error_msg):
         self.login_button.setEnabled(True)

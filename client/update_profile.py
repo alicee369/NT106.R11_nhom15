@@ -13,10 +13,12 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QScrollArea,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 
 
 class EditProfileWindow(QWidget):
+    profile_updated = Signal() # tạo tín hiệu báo cập nhật thành công
+
     def __init__(self, token: str):
         super().__init__()
         self.token = token  # Nhận token phiên làm việc từ MainWindow gửi sang
@@ -319,6 +321,7 @@ class EditProfileWindow(QWidget):
 
         if response.get("success"):
             self.show_message("Thành công", response.get("message", "Cập nhật hồ sơ thành công."), QMessageBox.Icon.Information)
+            self.profile_updated.emit() #phát signal báo thành công
             self.close()
         else:
             self.show_message("Thất bại", response.get("message"), QMessageBox.Icon.Critical)

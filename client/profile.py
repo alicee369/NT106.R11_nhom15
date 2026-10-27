@@ -1,6 +1,7 @@
 import random
 from api_worker import APIWorker
 from api_client import ClientPayloadBuilder
+from update_profile import EditProfileWindow # tích hợp gd upadte_profile
 
 from PySide6.QtWidgets import (
     QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
@@ -113,26 +114,91 @@ class ProfileWindow(QWidget):
         }
         self.worker = APIWorker("http://localhost:8000/api/profile", payload, ClientPayloadBuilder.build_auth_header(self.token))
         self.worker.response_signal.connect(self.on_profile_response)
-        self.worker.error_signal.connect(lambda _: self.full_name.setText("Mất kết nối máy chủ"))
+        self.worker.error_signal.connect(self.on_profile_error)
         self.worker.start()
 
     def on_profile_response(self, response):
-        if response.get("success"):
-            data = response.get("data", {})
-            user_id, username, display_name, join_date = data.get("userId"), data.get("username"), data.get("displayName"), data.get("joinDate")
+        print("Phản hồi API hồ sơ:", response) # xem dl thực tế
 
-            self.full_name.setText(display_name or username)
-            self.avatar.setText((display_name or username)[:2].upper())
+        if response.get("success") is not True:
+            QMessageBox.warning(
+                self,
+                "Không thể tải hồ sơ",
+                response.get("message") or "Máy chủ không trả về thông tin hồ sơ."
+            )
+            return
 
-            while self.info_grid.count():
-                widget = self.info_grid.takeAt(0).widget()
-                if widget: widget.deleteLater()
+        data = response.get("data")
 
-            self.info_grid.addWidget(self.create_info_field("Mã số người dùng (userId)", str(user_id)), 0, 0)
-            self.info_grid.addWidget(self.create_info_field("Tên đăng nhập", username), 0, 1)
-            self.info_grid.addWidget(self.create_info_field("Họ và tên hiển thị", display_name), 1, 0)
-            self.info_grid.addWidget(self.create_info_field("Ngày tham gia hệ thống", str(join_date)), 1, 1)
+        if not isinstance(data, dict):
+            QMessageBox.warning(
+                self,
+                "Lỗi dữ liệu",
+                "Dữ liệu hồ sơ trả về không hợp lệ."
+            )
+            return
 
+        user_id = data.get("userId")
+        username = data.get("username")
+        display_name = data.get("displayName")
+        join_date = data.get("joinDate")
+
+        # Cập nhật tên hiển thị trên thẻ hồ sơ
+        name = display_name or username or "Người dùng"
+        self.full_name.setText(str(name))
+
+        # Cập nhật chữ viết tắt trên avatar
+        self.avatar.setText(str(name)[:2].upper())
+
+        # Xóa các ô thông tin cũ trước khi tạo lại
+        while self.info_grid.count():
+            item = self.info_grid.takeAt(0)
+            widget = item.widget()
+
+            if widget is not None:
+                widget.deleteLater()
+
+        # Hiển thị dữ liệu lấy từ API
+        self.info_grid.addWidget(
+            self.create_info_field(
+                "Mã số người dùng (userId)",
+                str(user_id) if user_id is not None else "Chưa có dữ liệu"
+            ),
+            0, 0
+        )
+
+        self.info_grid.addWidget(
+            self.create_info_field(
+                "Tên đăng nhập",
+                str(username) if username else "Chưa có dữ liệu"
+            ),
+            0, 1
+        )
+
+        self.info_grid.addWidget(
+            self.create_info_field(
+                "Họ và tên hiển thị",
+                str(display_name) if display_name else "Chưa có dữ liệu"
+            ),
+            1, 0
+        )
+
+        self.info_grid.addWidget(
+            self.create_info_field(
+                "Ngày tham gia hệ thống",
+                str(join_date) if join_date else "Chưa có dữ liệu"
+            ),
+            1, 1
+        )
+    def on_profile_error(self, error_msg): # khi API không kết nối được hoặc xảy ra lỗi, sẽ biết lỗi cụ thể thay vì chỉ thấy một thông báo chung.
+        self.full_name.setText("Không thể tải hồ sơ")
+
+        QMessageBox.warning(
+            self,
+            "Lỗi tải hồ sơ",
+            error_msg
+        )
+    
     def create_info_field(self, label_text, value_text):
         field = QFrame(styleSheet="QFrame { background-color: #0F172A; border: 1px solid #303B53; border-radius: 9px; }")
         field.setMinimumHeight(88)
@@ -146,27 +212,10 @@ class ProfileWindow(QWidget):
 
     def handle_update_prompt(self):
         # UC26: Cập nhật thông tin cá nhân
-        new_name, ok = QInputDialog.getText(self, "Cập nhật hồ sơ", "Tên hiển thị mới:")
-        if not ok: return
-        old_pass, ok2 = QInputDialog.getText(self, "Xác nhận mật khẩu", "Mật khẩu cũ:", QLineEdit.EchoMode.Password)
-        if not ok2: return
-        new_pass, ok3 = QInputDialog.getText(self, "Mật khẩu mới", "Mật khẩu mới:", QLineEdit.EchoMode.Password)
-        if not ok3: return
-
-        req_id = random.randint(1000, 9999)
-        payload = {
-            "action": "PROFILE_UPDATE",
-            "requestId": req_id,
-            "data": {
-                "displayName": new_name,
-                "oldPassword": old_pass,
-                "newPassword": new_pass
-            }
-        }
-        self.update_worker = APIWorker("http://localhost:8000/api/profile/update", payload, ClientPayloadBuilder.build_auth_header(self.token))
-        self.update_worker.response_signal.connect(lambda res: [QMessageBox.information(self, "Thông báo", res.get("message")), self.fetch_profile_data() if res.get("success") else None])
-        self.update_worker.error_signal.connect(lambda err: QMessageBox.critical(self, "Lỗi", err))
-        self.update_worker.start()
+        # Mở cửa sổ EditProfileWindow chuyên nghiệp thay vì QInputDialog
+        self.edit_window = EditProfileWindow(self.token)
+        self.edit_window.profile_updated.connect(self.fetch_profile_data)  # Tự động làm mới dữ liệu khi cập nhật xong
+        self.edit_window.show()
 
     def handle_delete_account(self):
         # UC27: Xóa tài khoản
