@@ -23,17 +23,17 @@ def build_response(action: str, req_id: int, success: bool, error_code: Optional
         "data": data
     }
 
-# Hàm giả lập lấy user_id từ token (Trong thực tế sẽ dùng thư viện giải mã JWT)
-def get_current_user_id(authorization: str) -> int:
+# Lấy user_id từ token
+def get_current_user_id(authorization: Optional[str]) -> int:
     if authorization and authorization.startswith("Bearer "):
         try:
-            # Lấy id ở phần đuôi của token giả lập mà ta đã tạo lúc login
+            # Lấy id ở phần đuôi của token mà ta đã tạo lúc login
             token = authorization.split(" ")[1]
             return int(token.split("...")[-1])
-        except:
+        except Exception:
             pass
-    # Nếu gửi trên Swagger UI mà không có Auth header, lấy tạm user số 1 để tránh sập lỗi DB
-    return 1
+    # Nếu client không gửi Auth header, trả về 0 để server báo lỗi "USER_NOT_FOUND"
+    return 0
 
 # UC25: Xem hồ sơ người dùng
 @router.post("")
@@ -67,9 +67,11 @@ async def update_profile(payload: RequestPayload, authorization: Optional[str] =
     if not user:
         return build_response("PROFILE_UPDATE", payload.requestId, False, "USER_NOT_FOUND", "Không tìm thấy người dùng", None)
 
-    display_name = payload.data.get("displayName")
-    old_password = payload.data.get("oldPassword")
-    new_password = payload.data.get("newPassword")
+
+
+    display_name: Optional[str] = payload.data.get("displayName")
+    old_password: Optional[str] = payload.data.get("oldPassword")
+    new_password: Optional[str] = payload.data.get("newPassword")
 
     # Nếu người dùng muốn đổi mật khẩu
     if old_password and new_password:

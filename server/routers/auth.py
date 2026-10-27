@@ -27,9 +27,9 @@ def build_response(action: str, req_id: int, success: bool, error_code: Optional
 # UC22: Tạo tài khoản
 @router.post("/register")
 async def register(payload: RequestPayload, session: Session = Depends(get_session)):
-    username = payload.data.get("username")
-    password = payload.data.get("password")
-    display_name = payload.data.get("displayName")
+    username = str(payload.data.get("username", ""))
+    password = str(payload.data.get("password", ""))
+    display_name = str(payload.data.get("displayName", "Người Dùng Mới"))
 
     # Kiểm tra xem tên đăng nhập đã tồn tại trong database chưa
     existing_user = session.exec(select(User).where(User.username == username)).first()
@@ -67,17 +67,27 @@ async def login(payload: RequestPayload, session: Session = Depends(get_session)
     # Truy vấn lấy user theo username
     user = session.exec(select(User).where(User.username == username)).first()
 
-    # Kiểm tra user có tồn tại không và password có khớp không
-    if not user or user.password != password:
+    # Kiểm tra user có tồn tại không
+    if not user:
+        return build_response(
+            action="AUTH_LOGIN",
+            req_id=payload.requestId,
+            success=False,
+            error_code="AUTH_USER_NOT_FOUND",
+            message="Tài khoản này chưa tồn tại",
+            data=None
+        )
+
+    # Kiểm tra password có khớp không
+    if user.password != password:
         return build_response(
             action="AUTH_LOGIN",
             req_id=payload.requestId,
             success=False,
             error_code="AUTH_INVALID_CREDENTIALS",
-            message="Tên đăng nhập hoặc mật khẩu không chính xác.",
+            message="Mật khẩu không chính xác.",
             data=None
         )
-
     # Trả về token mô phỏng, đính kèm luôn id để test auth header ở phần profile
     fake_token = f"eyJhbGciOiJIUzI1Ni...{user.id}"
 
