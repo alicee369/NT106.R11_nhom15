@@ -1,139 +1,83 @@
-
-from PySide6.QtWidgets import (
-    QApplication,
-    QDialog,
-    QLabel,
-    QPushButton,
-    QVBoxLayout,
-    QHBoxLayout,
-    QFrame,
-)
-from PySide6.QtCore import Qt
-
+import random
+from api_worker import APIWorker
+from api_client import ClientPayloadBuilder
+from PySide6.QtWidgets import QDialog, QLabel, QPushButton, QVBoxLayout, QHBoxLayout
+from PySide6.QtCore import Qt, Signal
 
 class LogoutDialog(QDialog):
-    def __init__(self):
-        super().__init__()
+    logout_success = Signal()
 
-        # Cấu hình hộp thoại
+    def __init__(self, token: str):
+        super().__init__()
+        self.token = token
         self.setWindowTitle("Study Management - Đăng xuất")
         self.setFixedSize(420, 270)
 
-        # Bố cục chính
-        layout = QVBoxLayout()
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(28, 25, 28, 25)
         layout.setSpacing(14)
 
-        # Biểu tượng xác nhận
-        self.icon_label = QLabel("↗")
-        self.icon_label.setObjectName("iconLabel")
-        self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.icon_label.setFixedSize(48, 48)
+        icon_label = QLabel("↗", objectName="iconLabel", alignment=Qt.AlignmentFlag.AlignCenter, fixedSize=(48, 48))
+        title = QLabel("Đăng xuất khỏi tài khoản?", objectName="dialogTitle", alignment=Qt.AlignmentFlag.AlignCenter)
+        message = QLabel("Bạn có chắc chắn muốn đăng xuất khỏi\nStudy Management không?", objectName="dialogMessage", alignment=Qt.AlignmentFlag.AlignCenter, wordWrap=True)
 
-        # Tiêu đề
-        self.title = QLabel("Đăng xuất khỏi tài khoản?")
-        self.title.setObjectName("dialogTitle")
-        self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        cancel_button = QPushButton("Ở lại", objectName="cancelButton", minimumHeight=40)
+        cancel_button.clicked.connect(self.reject)
 
-        # Nội dung xác nhận
-        self.message = QLabel(
-            "Bạn có chắc chắn muốn đăng xuất khỏi\n"
-            "Study Management không?"
-        )
-        self.message.setObjectName("dialogMessage")
-        self.message.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.message.setWordWrap(True)
+        self.logout_button = QPushButton("Đăng xuất", objectName="logoutButton", minimumHeight=40)
+        self.logout_button.clicked.connect(self.handle_logout)
 
-        # Hai nút
-        self.cancel_button = QPushButton("Ở lại")
-        self.logout_button = QPushButton("Đăng xuất")
+        btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(12)
+        btn_layout.addWidget(cancel_button)
+        btn_layout.addWidget(self.logout_button)
 
-        self.cancel_button.setMinimumHeight(40)
-        self.logout_button.setMinimumHeight(40)
-
-        self.cancel_button.setObjectName("cancelButton")
-        self.logout_button.setObjectName("logoutButton")
-
-        # Xếp hai nút theo chiều ngang
-        button_layout = QHBoxLayout()
-        button_layout.setSpacing(12)
-        button_layout.addWidget(self.cancel_button)
-        button_layout.addWidget(self.logout_button)
-
-        # Xếp các thành phần theo chiều dọc
-        layout.addWidget(self.icon_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.title)
-        layout.addWidget(self.message)
+        layout.addWidget(icon_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
+        layout.addWidget(message)
         layout.addStretch()
-        layout.addLayout(button_layout)
+        layout.addLayout(btn_layout)
 
-        self.setLayout(layout)
-
-        # Định dạng giao diện
         self.setStyleSheet("""
-            QDialog {
-                background-color: #111827;
-            }
-
-            QLabel {
-                background-color: transparent;
-            }
-
-            QLabel#iconLabel {
-                background-color: #292044;
-                color: #C4B5FD;
-                font-size: 26px;
-                font-weight: bold;
-                border-radius: 24px;
-            }
-
-            QLabel#dialogTitle {
-                color: #F8FAFC;
-                font-size: 19px;
-                font-weight: bold;
-            }
-
-            QLabel#dialogMessage {
-                color: #94A3B8;
-                font-size: 13px;
-            }
-
-            QPushButton {
-                border: none;
-                border-radius: 7px;
-                padding: 9px;
-                font-size: 13px;
-                font-weight: bold;
-            }
-
-            QPushButton#cancelButton {
-                background-color: #263248;
-                color: #E2E8F0;
-            }
-
-            QPushButton#cancelButton:hover {
-                background-color: #35435D;
-            }
-
-            QPushButton#logoutButton {
-                background-color: #7C3AED;
-                color: white;
-            }
-
-            QPushButton#logoutButton:hover {
-                background-color: #6D28D9;
-            }
-
-            QPushButton:focus {
-                outline: none;
-            }
+            QDialog { background-color: #111827; }
+            QLabel { background-color: transparent; }
+            QLabel#iconLabel { background-color: #292044; color: #C4B5FD; font-size: 26px; font-weight: bold; border-radius: 24px; }
+            QLabel#dialogTitle { color: #F8FAFC; font-size: 19px; font-weight: bold; }
+            QLabel#dialogMessage { color: #94A3B8; font-size: 13px; }
+            QPushButton { border: none; border-radius: 7px; padding: 9px; font-size: 13px; font-weight: bold; }
+            QPushButton#cancelButton { background-color: #263248; color: #E2E8F0; }
+            QPushButton#cancelButton:hover { background-color: #35435D; }
+            QPushButton#logoutButton { background-color: #7C3AED; color: white; }
+            QPushButton#logoutButton:hover { background-color: #6D28D9; }
         """)
 
+    def handle_logout(self):
+        req_id = random.randint(1000, 9999)
+        # Payload chuẩn UC24
+        payload = {
+            "action": "AUTH_LOGOUT",
+            "requestId": req_id,
+            "data": {}
+        }
+        headers = ClientPayloadBuilder.build_auth_header(self.token)
+        url = "http://localhost:5000/api/auth/logout"
 
-if __name__ == "__main__":
-    import sys
+        self.logout_button.setEnabled(False)
+        self.logout_button.setText("Đang đăng xuất...")
 
-    app = QApplication(sys.argv)
+        self.worker = APIWorker(url, payload, headers)
+        self.worker.response_signal.connect(self.on_logout_response)
+        self.worker.error_signal.connect(self.on_logout_error)
+        self.worker.start()
 
-    dialog = LogoutDialog()
-    dialog.exec()
+    def on_logout_response(self, response):
+        if response.get("success"):
+            self.logout_success.emit()
+            self.accept()
+        else:
+            self.logout_button.setEnabled(True)
+            self.logout_button.setText("Đăng xuất")
+
+    def on_logout_error(self, _):
+        self.logout_success.emit()
+        self.accept()

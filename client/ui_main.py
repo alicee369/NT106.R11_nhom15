@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 
 from login import LoginWindow
 from register import RegisterWindow
+from profile import ProfileWindow  # Nhập ProfileWindow từ file profile.py[cite: 5]
 
 
 class MainWindow(QWidget):
@@ -22,8 +23,8 @@ class MainWindow(QWidget):
         self.stacked_widget = QStackedWidget()
 
         # Tạo form đăng nhập và đăng ký
-        self.login_page = LoginWindow()
-        self.register_page = RegisterWindow()
+        self.login_page = LoginWindow()  #[cite: 3]
+        self.register_page = RegisterWindow()  #[cite: 6]
 
         # Đưa hai form vào QStackedWidget
         self.stacked_widget.addWidget(self.login_page)
@@ -39,12 +40,31 @@ class MainWindow(QWidget):
             lambda: self.stacked_widget.setCurrentIndex(0)
         )
 
+        # Lắng nghe sự kiện đăng nhập thành công từ LoginWindow[cite: 3]
+        self.login_page.login_success.connect(self.on_login_success)
+
         # Đặt QStackedWidget vào cửa sổ chính
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.stacked_widget)
 
         self.setLayout(layout)
+
+    def on_login_success(self, token: str):
+        # Khởi tạo màn hình profile với token nhận được sau khi đăng nhập thành công[cite: 3, 5]
+        self.profile_page = ProfileWindow(token)  #[cite: 5]
+        
+        # Xử lý sự kiện nếu tài khoản bị xóa thì quay về trang đăng nhập[cite: 5]
+        self.profile_page.account_deleted.connect(self.on_account_deleted)
+
+        self.stacked_widget.addWidget(self.profile_page)
+        self.stacked_widget.setCurrentWidget(self.profile_page)
+        self.setFixedSize(960, 640)  # Điều chỉnh kích thước cửa sổ phù hợp với ProfileWindow
+
+    def on_account_deleted(self):
+        # Quay về trang đăng nhập (index 0) khi tài khoản bị xóa
+        self.stacked_widget.setCurrentIndex(0)
+        self.setFixedSize(960, 600)
 
 
 if __name__ == "__main__":
@@ -54,4 +74,3 @@ if __name__ == "__main__":
     window.show()
 
     sys.exit(app.exec())
-

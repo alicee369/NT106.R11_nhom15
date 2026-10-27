@@ -1,5 +1,8 @@
+import random
+from api_worker import APIWorker
+from api_client import ClientPayloadBuilder
+
 from PySide6.QtWidgets import (
-    QApplication,
     QWidget,
     QLabel,
     QLineEdit,
@@ -14,8 +17,9 @@ from PySide6.QtCore import Qt
 
 
 class EditProfileWindow(QWidget):
-    def __init__(self):
+    def __init__(self, token: str):
         super().__init__()
+        self.token = token  # Nhận token phiên làm việc từ MainWindow gửi sang
 
         # Cấu hình cửa sổ
         self.setWindowTitle("Study Management - Cập nhật hồ sơ")
@@ -26,7 +30,7 @@ class EditProfileWindow(QWidget):
         outer_layout = QVBoxLayout(self)
         outer_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Tạo QScrollArea để chống tràn/đè chữ
+        # Tạo QScrollArea để chống tràn/đè chữ khi thu nhỏ cửa sổ
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
@@ -82,21 +86,13 @@ class EditProfileWindow(QWidget):
         self.info_title = QLabel("Thông tin cá nhân")
         self.info_title.setObjectName("sectionTitle")
 
-        self.name_label = QLabel("Tên hiển thị")
+        self.name_label = QLabel("Tên hiển thị mới")
         self.name_input = QLineEdit()
-        self.name_input.setText("Nguyễn Văn A")
-        self.name_input.setPlaceholderText("Nhập tên hiển thị")
-
-        self.email_label = QLabel("Email")
-        self.email_input = QLineEdit()
-        self.email_input.setText("vana@example.com")
-        self.email_input.setPlaceholderText("Nhập email")
+        self.name_input.setPlaceholderText("Nhập tên hiển thị mới")
 
         info_layout.addWidget(self.info_title)
         info_layout.addWidget(self.name_label)
         info_layout.addWidget(self.name_input)
-        info_layout.addWidget(self.email_label)
-        info_layout.addWidget(self.email_input)
 
         info_card.setLayout(info_layout)
 
@@ -194,45 +190,37 @@ class EditProfileWindow(QWidget):
                 color: #F1F5F9;
                 font-size: 13px;
             }
-
             QLabel {
                 background-color: transparent;
             }
-
             QLabel#brandTitle {
                 color: #C4B5FD;
                 font-size: 19px;
                 font-weight: bold;
             }
-
             QLabel#headerNote {
                 color: #94A3B8;
                 font-size: 11px;
             }
-
             QLabel#pageTitle {
                 color: #F8FAFC;
                 font-size: 24px;
                 font-weight: bold;
             }
-
             QLabel#pageDescription {
                 color: #94A3B8;
                 font-size: 13px;
             }
-
             QFrame#formCard {
                 background-color: #171D2E;
                 border: 1px solid #28334B;
                 border-radius: 10px;
             }
-
             QLabel#sectionTitle {
                 color: #F8FAFC;
                 font-size: 15px;
                 font-weight: bold;
             }
-
             QLineEdit {
                 background-color: #0B1020;
                 color: #F8FAFC;
@@ -241,38 +229,30 @@ class EditProfileWindow(QWidget):
                 padding: 7px 10px;
                 min-height: 26px;
             }
-
             QLineEdit:focus {
                 border: 1px solid #8B5CF6;
             }
-
             QPushButton {
                 border: none;
                 border-radius: 6px;
                 padding: 6px 16px;
                 font-weight: bold;
             }
-
             QPushButton#cancelButton {
                 background-color: #263248;
                 color: #E2E8F0;
                 border: 1px solid #35415A;
             }
-
             QPushButton#cancelButton:hover {
                 background-color: #35435D;
             }
-
             QPushButton#saveButton {
                 background-color: #7C3AED;
                 color: white;
             }
-
             QPushButton#saveButton:hover {
                 background-color: #6D28D9;
             }
-
-            /* Tùy chỉnh thanh cuộn cho đẹp mắt */
             QScrollBar:vertical {
                 border: none;
                 background: #0B1020;
@@ -289,61 +269,64 @@ class EditProfileWindow(QWidget):
             }
         """)
 
-    # Xử lý nút Lưu thay đổi
     def handle_save(self):
         display_name = self.name_input.text().strip()
-        email = self.email_input.text().strip()
-
         current_password = self.current_password_input.text()
         new_password = self.new_password_input.text()
         confirm_password = self.confirm_password_input.text()
 
         if not display_name:
-            self.show_message(
-                "Thiếu thông tin",
-                "Vui lòng nhập tên hiển thị.",
-                QMessageBox.Icon.Warning
-            )
+            self.show_message("Thiếu thông tin", "Vui lòng nhập tên hiển thị mới.", QMessageBox.Icon.Warning)
             return
 
-        if not email:
-            self.show_message(
-                "Thiếu thông tin",
-                "Vui lòng nhập email.",
-                QMessageBox.Icon.Warning
-            )
-            return
-
+        # Kiểm tra tính hợp lệ nếu người dùng nhập thông tin đổi mật khẩu
         if current_password or new_password or confirm_password:
             if not current_password:
-                self.show_message(
-                    "Thiếu thông tin",
-                    "Vui lòng nhập mật khẩu hiện tại.",
-                    QMessageBox.Icon.Warning
-                )
+                self.show_message("Thiếu thông tin", "Vui lòng nhập mật khẩu hiện tại để xác thực.", QMessageBox.Icon.Warning)
                 return
-
             if not new_password:
-                self.show_message(
-                    "Thiếu thông tin",
-                    "Vui lòng nhập mật khẩu mới.",
-                    QMessageBox.Icon.Warning
-                )
+                self.show_message("Thiếu thông tin", "Vui lòng nhập mật khẩu mới.", QMessageBox.Icon.Warning)
                 return
-
             if new_password != confirm_password:
-                self.show_message(
-                    "Mật khẩu không khớp",
-                    "Mật khẩu mới và xác nhận không trùng khớp.",
-                    QMessageBox.Icon.Warning
-                )
+                self.show_message("Mật khẩu không khớp", "Mật khẩu mới và xác nhận nhập lại không trùng khớp.", QMessageBox.Icon.Warning)
                 return
 
-        self.show_message(
-            "Thông báo",
-            "Dữ liệu hợp lệ. Chức năng lưu sẽ được kết nối sau.",
-            QMessageBox.Icon.Information
-        )
+        # Đóng gói dữ liệu payload UC26 gửi lên server
+        req_id = random.randint(1000, 9999)
+        payload = {
+            "action": "PROFILE_UPDATE",
+            "requestId": req_id,
+            "data": {
+                "displayName": display_name,
+                "oldPassword": current_password,
+                "newPassword": new_password
+            }
+        }
+        headers = ClientPayloadBuilder.build_auth_header(self.token)
+        url = "http://localhost:5000/api/profile/update"
+
+        self.save_button.setEnabled(False)
+        self.save_button.setText("Đang lưu...")
+
+        self.worker = APIWorker(url, payload, headers)
+        self.worker.response_signal.connect(self.on_update_response)
+        self.worker.error_signal.connect(self.on_update_error)
+        self.worker.start()
+
+    def on_update_response(self, response):
+        self.save_button.setEnabled(True)
+        self.save_button.setText("Lưu thay đổi")
+
+        if response.get("success"):
+            self.show_message("Thành công", response.get("message", "Cập nhật hồ sơ thành công."), QMessageBox.Icon.Information)
+            self.close()
+        else:
+            self.show_message("Thất bại", response.get("message"), QMessageBox.Icon.Critical)
+
+    def on_update_error(self, error_msg):
+        self.save_button.setEnabled(True)
+        self.save_button.setText("Lưu thay đổi")
+        self.show_message("Lỗi kết nối", error_msg, QMessageBox.Icon.Critical)
 
     def show_message(self, title, message, icon):
         msg = QMessageBox(self)
@@ -351,35 +334,10 @@ class EditProfileWindow(QWidget):
         msg.setWindowTitle(title)
         msg.setText(message)
         msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-
         msg.setStyleSheet("""
-            QMessageBox {
-                background-color: white;
-            }
-            QLabel {
-                background-color: transparent;
-                color: #1F2937;
-                font-size: 14px;
-            }
-            QPushButton {
-                background-color: #7C3AED;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 6px 18px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #6D28D9;
-            }
+            QMessageBox { background-color: white; }
+            QLabel { background-color: transparent; color: #1F2937; font-size: 14px; }
+            QPushButton { background-color: #7C3AED; color: white; border: none; border-radius: 6px; padding: 6px 18px; font-weight: bold; }
+            QPushButton:hover { background-color: #6D28D9; }
         """)
         msg.exec()
-
-
-if __name__ == "__main__":
-    import sys
-
-    app = QApplication(sys.argv)
-    window = EditProfileWindow()
-    window.show()
-    sys.exit(app.exec())

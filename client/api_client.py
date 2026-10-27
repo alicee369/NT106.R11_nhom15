@@ -31,3 +31,15 @@ class ClientPayloadBuilder:
             "Content-Type": "application/json",
             "Authorization": f"Bearer {token}"
         }
+
+    @staticmethod
+    def build_profile_update_payload(req_id: int, display_name: str, old_password: str, new_password: str) -> dict:
+        return {
+            "action": "PROFILE_UPDATE",
+            "requestId": req_id,
+            "data": {
+                "displayName": display_name,
+                "oldPassword": old_password,
+                "newPassword": new_password
+            }
+        }

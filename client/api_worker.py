@@ -22,7 +22,7 @@ class APIWorker(QThread):
                 self.url,
                 json=self.payload,
                 headers=self.headers,
-                timeout=10
+                timeout=60
             )
             response.raise_for_status()
 
