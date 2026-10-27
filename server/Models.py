@@ -1,12 +1,10 @@
-from datetime import UTC, datetime
 
+from datetime import UTC, datetime
 from sqlalchemy import CheckConstraint, DateTime
 from sqlmodel import Field, SQLModel
 
-
 def utc_now() -> datetime:
     return datetime.now(UTC)
-
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
@@ -76,3 +74,5 @@ class StudyPlan(SQLModel, table=True):
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"onupdate": utc_now},
     )
+
+
