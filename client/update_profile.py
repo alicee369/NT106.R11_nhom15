@@ -1,4 +1,4 @@
-pip install sqlmodel psycopg2-binaryimport random
+import random
 from api_worker import APIWorker
 from api_client import ClientPayloadBuilder
 
