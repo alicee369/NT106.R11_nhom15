@@ -38,7 +38,9 @@ class ProfileWindow(QWidget):
         profile_layout.setContentsMargins(24, 24, 24, 24)
         profile_layout.setSpacing(20)
 
-        self.avatar = QLabel("??", objectName="avatar", fixedSize=(82, 82), alignment=Qt.AlignmentFlag.AlignCenter)
+        self.avatar = QLabel("??", objectName="avatar")
+        self.avatar.setFixedSize(82, 82)
+        self.avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         user_info_layout = QVBoxLayout()
         user_info_layout.setSpacing(7)
@@ -109,7 +111,7 @@ class ProfileWindow(QWidget):
             "requestId": req_id,
             "data": {}
         }
-        self.worker = APIWorker("http://localhost:5000/api/profile", payload, ClientPayloadBuilder.build_auth_header(self.token))
+        self.worker = APIWorker("http://localhost:8000/api/profile", payload, ClientPayloadBuilder.build_auth_header(self.token))
         self.worker.response_signal.connect(self.on_profile_response)
         self.worker.error_signal.connect(lambda _: self.full_name.setText("Mất kết nối máy chủ"))
         self.worker.start()
@@ -161,7 +163,7 @@ class ProfileWindow(QWidget):
                 "newPassword": new_pass
             }
         }
-        self.update_worker = APIWorker("http://localhost:5000/api/profile/update", payload, ClientPayloadBuilder.build_auth_header(self.token))
+        self.update_worker = APIWorker("http://localhost:8000/api/profile/update", payload, ClientPayloadBuilder.build_auth_header(self.token))
         self.update_worker.response_signal.connect(lambda res: [QMessageBox.information(self, "Thông báo", res.get("message")), self.fetch_profile_data() if res.get("success") else None])
         self.update_worker.error_signal.connect(lambda err: QMessageBox.critical(self, "Lỗi", err))
         self.update_worker.start()
@@ -179,7 +181,7 @@ class ProfileWindow(QWidget):
                 "passwordToConfirm": password
             }
         }
-        self.delete_worker = APIWorker("http://localhost:5000/api/profile/delete", payload, ClientPayloadBuilder.build_auth_header(self.token))
+        self.delete_worker = APIWorker("http://localhost:8000/api/profile/delete", payload, ClientPayloadBuilder.build_auth_header(self.token))
         self.delete_worker.response_signal.connect(lambda res: [QMessageBox.information(self, "Thông báo", res.get("message")), self.account_deleted.emit(), self.close()] if res.get("success") else QMessageBox.critical(self, "Lỗi", res.get("message")))
         self.delete_worker.error_signal.connect(lambda err: QMessageBox.critical(self, "Lỗi mạng", err))
         self.delete_worker.start()

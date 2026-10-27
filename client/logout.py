@@ -60,7 +60,7 @@ class LogoutDialog(QDialog):
             "data": {}
         }
         headers = ClientPayloadBuilder.build_auth_header(self.token)
-        url = "http://localhost:5000/api/auth/logout"
+        url = "http://localhost:8000/api/auth/logout"
 
         self.logout_button.setEnabled(False)
         self.logout_button.setText("Đang đăng xuất...")

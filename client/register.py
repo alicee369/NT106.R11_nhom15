@@ -108,7 +108,7 @@ class RegisterWindow(QWidget):
 
         req_id = random.randint(1000, 9999)
         payload = ClientPayloadBuilder.build_register_payload(req_id, username, password, display_name)
-        url = "http://localhost:5000/api/auth/register"
+        url = "http://localhost:8000/api/auth/register"
 
         self.register_button.setEnabled(False)
         self.register_button.setText("Đang đăng ký...")
