@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Header, Depends
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
-from sqlmodel import Session, select
+from sqlmodel import Session, select, delete
 from datetime import datetime, timedelta, timezone
 # Import get_session và Model từ project của bạn
 from database import get_session
@@ -91,13 +91,15 @@ async def login(payload: RequestPayload, session: Session = Depends(get_session)
     # Trả về token mô phỏng, đính kèm luôn id để test auth header ở phần profile
     fake_token = f"eyJhbGciOiJIUzI1Ni...{user.id}"
 
-    # Ghi nhận session đăng nhập vào cơ sở dữ liệu Supabase
     expiry_time = datetime.now(timezone.utc) + timedelta(days=7)
+
+    session.exec(delete(LoginSession).where(LoginSession.user_id == user.id))
+    # ------------------------------------------------------------
+
     new_login_session = LoginSession(
-        user_id=user.id,
+        user_id=int(user.id),  # Bọc int() để PyCharm không cảnh báo
         token_hash=fake_token,
         expires_at=expiry_time
-
     )
     session.add(new_login_session)
     session.commit()
@@ -115,9 +117,19 @@ async def login(payload: RequestPayload, session: Session = Depends(get_session)
         }
     )
 
+
 # UC24: Đăng xuất
 @router.post("/logout")
-async def logout(payload: RequestPayload, authorization: Optional[str] = Header(None)):
+async def logout(payload: RequestPayload, authorization: Optional[str] = Header(None),
+                 session: Session = Depends(get_session)):
+    if authorization:
+        # Xử lý token (bỏ chữ "Bearer " nếu có)
+        token = authorization.replace("Bearer ", "") if "Bearer " in authorization else authorization
+
+        # Tìm và xóa đúng phiên đăng nhập chứa token này khỏi Supabase
+        session.exec(delete(LoginSession).where(LoginSession.token_hash == token))
+        session.commit()
+
     return build_response(
         action="AUTH_LOGOUT",
         req_id=payload.requestId,
