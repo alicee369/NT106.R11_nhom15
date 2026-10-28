@@ -11,6 +11,7 @@ from PySide6.QtCore import Qt, Signal
 
 class ProfileWindow(QWidget):
     account_deleted = Signal()
+    logged_out = Signal() #báo đx thành công
 
     def __init__(self, token: str):
         super().__init__()
@@ -75,6 +76,7 @@ class ProfileWindow(QWidget):
         # Footer & Action Buttons
         footer_layout = QHBoxLayout()
         update_btn = QPushButton("Cập nhật hồ sơ", clicked=self.handle_update_prompt)
+        logout_btn = QPushButton("Đăng xuất", clicked=self.handle_logout, styleSheet="background-color: #374151; color: white;")
         delete_btn = QPushButton("Xóa tài khoản", clicked=self.handle_delete_account, styleSheet="background-color: #DC2626; color: white;")
         close_btn = QPushButton("Đóng", clicked=self.close)
 
@@ -262,15 +264,21 @@ class ProfileWindow(QWidget):
             if res.get("success"):
                 QMessageBox.information(self, "Thông báo", res.get("message") or "Đăng xuất thành công!")
                 
-                # 2. Xóa sạch biến token lưu trữ ở máy (gán token = None hoặc rỗng)
+                # 2. Xóa sạch biến token lưu trữ ở máy
                 self.token = None
                 
-                # 3. Đóng màn hình profile và quay về màn hình đăng nhập (Login)
+                # Phát tín hiệu (nếu cần cho các component khác)
+                self.logged_out.emit()
+                
+                # 3. Mở lại màn hình đăng nhập (Login) và đóng cửa sổ profile
+                try:
+                    from login import LoginWindow  # Thay đổi tên file/class login nếu nhóm dùng tên khác
+                    self.login_window = LoginWindow()
+                    self.login_window.show()
+                except ImportError:
+                    pass
+                
                 self.close()
-                # Nếu Tiên có file login.py và class LoginWindow, mở lại ở đây:
-                # from login import LoginWindow
-                # self.login_window = LoginWindow()
-                # self.login_window.show()
             else:
                 QMessageBox.critical(self, "Lỗi", res.get("message"))
 
