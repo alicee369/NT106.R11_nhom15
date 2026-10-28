@@ -2,10 +2,10 @@ from fastapi import APIRouter, Header, Depends
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from sqlmodel import Session, select
-
+from datetime import datetime, timedelta, timezone
 # Import get_session và Model từ project của bạn
 from database import get_session
-from Models import User
+from Models import User, LoginSession
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -90,6 +90,17 @@ async def login(payload: RequestPayload, session: Session = Depends(get_session)
         )
     # Trả về token mô phỏng, đính kèm luôn id để test auth header ở phần profile
     fake_token = f"eyJhbGciOiJIUzI1Ni...{user.id}"
+
+    # Ghi nhận session đăng nhập vào cơ sở dữ liệu Supabase
+    expiry_time = datetime.now(timezone.utc) + timedelta(days=7)
+    new_login_session = LoginSession(
+        user_id=user.id,
+        token_hash=fake_token,
+        expires_at=expiry_time
+
+    )
+    session.add(new_login_session)
+    session.commit()
 
     return build_response(
         action="AUTH_LOGIN",
