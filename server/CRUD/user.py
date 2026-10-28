@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from models import LoginSession, PomodoroSettings, User
-from sqlmodel import Session, select
+from models import LoginSession, PomodoroSettings, StudyPlan, User
+from sqlmodel import Session, delete, select
 
 
 def utc_now() -> datetime:
@@ -115,3 +115,19 @@ def update_profile(
     db.commit()
     db.refresh(user)
     return user
+
+
+def delete_user(db: Session, user_id: int) -> bool:
+    user = db.get(User, user_id)
+    if user is None:
+        raise ValueError("Không tìm thấy tài khoản.")
+
+    db.exec(delete(PomodoroSettings).where(PomodoroSettings.user_id == user_id))
+    db.exec(delete(LoginSession).where(LoginSession.user_id == user_id))
+    db.exec(delete(StudyPlan).where(StudyPlan.user_id == user_id))
+
+    db.delete(user)
+
+    db.commit()
+
+    return True
