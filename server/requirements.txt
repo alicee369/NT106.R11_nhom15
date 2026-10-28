@@ -1,3 +1,5 @@
 fastapi
 uvicorn
 supabase
+sqlmodel
+psycopg2-binary

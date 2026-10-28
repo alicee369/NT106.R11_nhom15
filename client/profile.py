@@ -81,6 +81,7 @@ class ProfileWindow(QWidget):
         footer_layout.addWidget(QLabel("Thông tin hồ sơ • Chế độ xem", objectName="footerNote"))
         footer_layout.addStretch()
         footer_layout.addWidget(update_btn)
+        footer_layout.addWidget(logout_btn)
         footer_layout.addWidget(delete_btn)
         footer_layout.addWidget(close_btn)
         main_layout.addLayout(footer_layout)
@@ -234,3 +235,45 @@ class ProfileWindow(QWidget):
         self.delete_worker.response_signal.connect(lambda res: [QMessageBox.information(self, "Thông báo", res.get("message")), self.account_deleted.emit(), self.close()] if res.get("success") else QMessageBox.critical(self, "Lỗi", res.get("message")))
         self.delete_worker.error_signal.connect(lambda err: QMessageBox.critical(self, "Lỗi mạng", err))
         self.delete_worker.start()
+
+    def handle_logout(self):
+        # UC24: Đăng xuất phiên làm việc
+        confirm = QMessageBox.question(
+            self,
+            "Xác nhận đăng xuất",
+            "Bạn có chắc chắn muốn kết thúc phiên làm việc?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+
+        req_id = random.randint(1000, 9999)
+        payload = {
+            "action": "LOGOUT",
+            "requestId": req_id,
+            "data": {}
+        }
+        
+        # 1. Gọi API logout tới server của Lam để xóa dữ liệu trên Supabase
+        self.logout_worker = APIWorker("http://localhost:8000/api/auth/logout", payload, ClientPayloadBuilder.build_auth_header(self.token))
+        
+        def on_logout_success(res):
+            if res.get("success"):
+                QMessageBox.information(self, "Thông báo", res.get("message") or "Đăng xuất thành công!")
+                
+                # 2. Xóa sạch biến token lưu trữ ở máy (gán token = None hoặc rỗng)
+                self.token = None
+                
+                # 3. Đóng màn hình profile và quay về màn hình đăng nhập (Login)
+                self.close()
+                # Nếu Tiên có file login.py và class LoginWindow, mở lại ở đây:
+                # from login import LoginWindow
+                # self.login_window = LoginWindow()
+                # self.login_window.show()
+            else:
+                QMessageBox.critical(self, "Lỗi", res.get("message"))
+
+        self.logout_worker.response_signal.connect(on_logout_success)
+        self.logout_worker.error_signal.connect(lambda err: QMessageBox.critical(self, "Lỗi mạng", err))
+        self.logout_worker.start()
