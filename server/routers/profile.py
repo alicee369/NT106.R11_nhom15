@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Header, Depends
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
-from sqlmodel import Session, select
-
+from sqlmodel import Session, select, delete
 from database import get_session
-from Models import User
+from Models import User, LoginSession, StudyPlan, PomodoroSettings
 
 router = APIRouter(prefix="/api/profile", tags=["Profile"])
 
@@ -116,7 +115,7 @@ async def delete_profile(payload: RequestPayload, authorization: Optional[str] =
 
     # Xác thực mật khẩu trước khi xóa
     if user.password != password_to_confirm:
-         return build_response(
+        return build_response(
             action="PROFILE_DELETE",
             req_id=payload.requestId,
             success=False,
@@ -125,6 +124,13 @@ async def delete_profile(payload: RequestPayload, authorization: Optional[str] =
             data=None
         )
 
+    # --- DỌN DẸP DỮ LIỆU CON TRƯỚC KHI XÓA USER ---
+    session.exec(delete(LoginSession).where(LoginSession.user_id == user.id))
+    session.exec(delete(PomodoroSettings).where(PomodoroSettings.user_id == user.id))
+    session.exec(delete(StudyPlan).where(StudyPlan.user_id == user.id))
+    # ---------------------------------------------------------
+
+    # Xóa User
     session.delete(user)
     session.commit()
 
