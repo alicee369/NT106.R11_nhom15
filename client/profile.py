@@ -115,7 +115,7 @@ class ProfileWindow(QWidget):
             "requestId": req_id,
             "data": {}
         }
-        self.worker = APIWorker("http://localhost:8000/api/profile", payload, ClientPayloadBuilder.build_auth_header(self.token))
+        self.worker = APIWorker(f"{ClientPayloadBuilder.BASE_URL}/api/profile", payload, ClientPayloadBuilder.build_auth_header(self.token))
         self.worker.response_signal.connect(self.on_profile_response)
         self.worker.error_signal.connect(self.on_profile_error)
         self.worker.start()
@@ -233,7 +233,7 @@ class ProfileWindow(QWidget):
                 "passwordToConfirm": password
             }
         }
-        self.delete_worker = APIWorker("http://localhost:8000/api/profile/delete", payload, ClientPayloadBuilder.build_auth_header(self.token))
+        self.delete_worker = APIWorker(f"{ClientPayloadBuilder.BASE_URL}/api/profile/delete", payload, ClientPayloadBuilder.build_auth_header(self.token))
         self.delete_worker.response_signal.connect(lambda res: [QMessageBox.information(self, "Thông báo", res.get("message")), self.account_deleted.emit(), self.close()] if res.get("success") else QMessageBox.critical(self, "Lỗi", res.get("message")))
         self.delete_worker.error_signal.connect(lambda err: QMessageBox.critical(self, "Lỗi mạng", err))
         self.delete_worker.start()
@@ -258,7 +258,7 @@ class ProfileWindow(QWidget):
         }
         
         # 1. Gọi API logout tới server của Lam để xóa dữ liệu trên Supabase
-        self.logout_worker = APIWorker("http://localhost:8000/api/auth/logout", payload, ClientPayloadBuilder.build_auth_header(self.token))
+        self.logout_worker = APIWorker(f"{ClientPayloadBuilder.BASE_URL}/api/auth/logout", payload, ClientPayloadBuilder.build_auth_header(self.token))
         
         def on_logout_success(res):
             if res.get("success"):

@@ -1,5 +1,6 @@
 class ClientPayloadBuilder:
     """Class hỗ trợ tạo cấu trúc JSON chuẩn trước khi đưa vào QThread"""
+    BASE_URL = "https://nt106-r11-nhom15.onrender.com"
 
     @staticmethod
     def build_register_payload(req_id: int, username: str, password: str, display_name: str) -> dict:

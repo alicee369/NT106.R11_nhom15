@@ -305,7 +305,7 @@ class EditProfileWindow(QWidget):
             }
         }
         headers = ClientPayloadBuilder.build_auth_header(self.token)
-        url = "http://localhost:8000/api/profile/update"
+        url = f"{ClientPayloadBuilder.BASE_URL}/api/profile/update"
 
         self.save_button.setEnabled(False)
         self.save_button.setText("Đang lưu...")

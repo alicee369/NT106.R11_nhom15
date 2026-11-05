@@ -51,6 +51,9 @@ class MainWindow(QWidget):
         self.setLayout(layout)
 
     def on_login_success(self, token: str):
+        if hasattr(self, 'profile_page') and self.profile_page is not None:
+            self.stacked_widget.removeWidget(self.profile_page)
+            self.profile_page.deleteLater()
         # Khởi tạo màn hình profile với token nhận được sau khi đăng nhập thành công[cite: 3, 5]
         self.profile_page = ProfileWindow(token)  #[cite: 5]
         
