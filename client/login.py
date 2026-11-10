@@ -10,18 +10,19 @@ from PySide6.QtCore import Qt, Signal
 
 class LoginWindow(QWidget):
     register_requested = Signal()
-    login_success = Signal(str)
+    login_success = Signal(str) #str là kdl của token
 
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Study Management - Đăng nhập")
         self.setMinimumSize(800, 520)
 
-        main_layout = QHBoxLayout(self)
+        #chia layout thành 2 phần
+        main_layout = QHBoxLayout(self) 
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Trái
+        # layout trái
         left_panel = QFrame(objectName="leftPanel")
         left_layout = QVBoxLayout(left_panel)
         left_layout.setContentsMargins(40, 40, 40, 40)
@@ -31,11 +32,11 @@ class LoginWindow(QWidget):
         left_layout.addStretch()
         left_layout.addWidget(QLabel("Learn smarter.\nGrow further.", objectName="brandHeading"))
         desc = QLabel("Không gian học tập cá nhân của bạn.\nLập kế hoạch, quản lý và phát triển mỗi ngày.", objectName="brandDescription")
-        desc.setWordWrap(True)
+        desc.setWordWrap(True) #bật tính năng tự động xuống dòng
         left_layout.addWidget(desc)
         left_layout.addStretch()
 
-        # Phải
+        # layout phải
         right_panel = QFrame(objectName="rightPanel")
         form_layout = QVBoxLayout(right_panel)
         form_layout.setContentsMargins(40, 40, 40, 40)
@@ -48,12 +49,12 @@ class LoginWindow(QWidget):
         self.password_input = QLineEdit(placeholderText="Nhập mật khẩu", echoMode=QLineEdit.EchoMode.Password)
         
         self.login_button = QPushButton("Đăng nhập", minimumHeight=44)
-        self.login_button.clicked.connect(self.handle_login)
+        self.login_button.clicked.connect(self.handle_login) #sau khi bấm sẽ gọi hàm để gửi dl lên server
 
         reg_link = QLabel('Chưa có tài khoản? <a href="#">Đăng ký</a>', objectName="registerText", alignment=Qt.AlignmentFlag.AlignCenter)
-        reg_link.setTextFormat(Qt.TextFormat.RichText)
-        reg_link.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse)
-        reg_link.linkActivated.connect(lambda: self.register_requested.emit())
+        reg_link.setTextFormat(Qt.TextFormat.RichText) #biến Đăng ký thành link có thể click thay vì plain text
+        reg_link.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse) #QLabel(chỉ đọc) có thể click link bằng chuột
+        reg_link.linkActivated.connect(lambda: self.register_requested.emit()) #phát signal khi click, chuyển sang register page
 
         form_layout.addStretch()
         form_layout.addWidget(QLabel("Chào mừng trở lại!", objectName="formTitle"))
@@ -94,19 +95,19 @@ class LoginWindow(QWidget):
             return
 
         req_id = random.randint(1000, 9999)
-        payload = ClientPayloadBuilder.build_login_payload(req_id, username, password)
+        payload = ClientPayloadBuilder.build_login_payload(req_id, username, password) #gọi hàm từ api_client để đóng gói dl thành cấu trúc chuẩn JSON trước khi gửi server
         url = "http://localhost:8000/api/auth/login"
 
         self.login_button.setEnabled(False)
         self.login_button.setText("Đang đăng nhập...")
 
-        self.worker = APIWorker(url, payload)
+        self.worker = APIWorker(url, payload) #dùng luồng ngầm riêng để mang payload đi gửi qua mạng tới url, tránh freeze GUI
         self.worker.response_signal.connect(self.on_login_response)
         self.worker.error_signal.connect(self.on_login_error)
         self.worker.start()
 
     def on_login_response(self, response):
-        print("Phản hồi đăng nhập từ server:", response) # tạm check để coi bug ở đâu
+        print("Phản hồi đăng nhập từ server:", response) # in kq JSON mà server trả về để tiện debug
 
         self.login_button.setEnabled(True)
         self.login_button.setText("Đăng nhập")
@@ -132,18 +133,14 @@ class LoginWindow(QWidget):
                 )
                 return
 
-            self.login_success.emit(token)
+            self.login_success.emit(token) #phát signal tbao login thành công kèm token, để MainWindow nhận và chuyển sang ProfileWindow
 
         else:
             message = response.get(
                 "message",
                 "Tên đăng nhập hoặc mật khẩu không chính xác."
             )
-            QMessageBox.warning(
-                self,
-                "Đăng nhập thất bại",
-                message
-            )
+            QMessageBox.warning( self, "Đăng nhập thất bại", message)
 
     def on_login_error(self, error_msg):
         self.login_button.setEnabled(True)

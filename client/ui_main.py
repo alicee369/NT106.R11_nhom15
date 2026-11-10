@@ -23,8 +23,8 @@ class MainWindow(QWidget):
         self.stacked_widget = QStackedWidget()
 
         # Tạo form đăng nhập và đăng ký
-        self.login_page = LoginWindow()  #[cite: 3]
-        self.register_page = RegisterWindow()  #[cite: 6]
+        self.login_page = LoginWindow() 
+        self.register_page = RegisterWindow()  
 
         # Đưa hai form vào QStackedWidget
         self.stacked_widget.addWidget(self.login_page)
@@ -40,7 +40,7 @@ class MainWindow(QWidget):
             lambda: self.stacked_widget.setCurrentIndex(0)
         )
 
-        # Lắng nghe sự kiện đăng nhập thành công từ LoginWindow[cite: 3]
+        # Lắng nghe sự kiện đăng nhập thành công từ LoginWindow
         self.login_page.login_success.connect(self.on_login_success)
 
         # Đặt QStackedWidget vào cửa sổ chính
@@ -51,6 +51,10 @@ class MainWindow(QWidget):
         self.setLayout(layout)
 
     def on_login_success(self, token: str):
+        if hasattr(self, 'profile_page') and self.profile_page is not None:
+            self.stacked_widget.removeWidget(self.profile_page)
+            self.profile_page.deleteLater()
+            
         # Khởi tạo màn hình profile với token nhận được sau khi đăng nhập thành công[cite: 3, 5]
         self.profile_page = ProfileWindow(token)  #[cite: 5]
         
@@ -60,6 +64,10 @@ class MainWindow(QWidget):
         self.stacked_widget.addWidget(self.profile_page)
         self.stacked_widget.setCurrentWidget(self.profile_page)
         self.setFixedSize(960, 640)  # Điều chỉnh kích thước cửa sổ phù hợp với ProfileWindow
+
+    def on_logged_out(self):
+        self.stacked_widget.setCurrentIndex(0)
+        self.setFixedSize(960, 600)
 
     def on_account_deleted(self):
         # Quay về trang đăng nhập (index 0) khi tài khoản bị xóa
