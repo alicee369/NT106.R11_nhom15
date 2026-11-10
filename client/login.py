@@ -95,8 +95,13 @@ class LoginWindow(QWidget):
             return
 
         req_id = random.randint(1000, 9999)
+<<<<<<< HEAD
         payload = ClientPayloadBuilder.build_login_payload(req_id, username, password) #gọi hàm từ api_client để đóng gói dl thành cấu trúc chuẩn JSON trước khi gửi server
         url = "http://localhost:8000/api/auth/login"
+=======
+        payload = ClientPayloadBuilder.build_login_payload(req_id, username, password)
+        url = f"{ClientPayloadBuilder.BASE_URL}/api/auth/login"
+>>>>>>> a9efe467b451a24c000d311824f7826a40d95408
 
         self.login_button.setEnabled(False)
         self.login_button.setText("Đang đăng nhập...")
