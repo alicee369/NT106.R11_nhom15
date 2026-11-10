@@ -257,7 +257,7 @@ class ProfileWindow(QWidget):
             "data": {}
         }
         
-        # 1. Gọi API logout tới server của Lam để xóa dữ liệu trên Supabase
+        # 1. Gọi API logout tới server 
         self.logout_worker = APIWorker(f"{ClientPayloadBuilder.BASE_URL}/api/auth/logout", payload, ClientPayloadBuilder.build_auth_header(self.token))
         
         def on_logout_success(res):
@@ -267,17 +267,8 @@ class ProfileWindow(QWidget):
                 # 2. Xóa sạch biến token lưu trữ ở máy
                 self.token = None
                 
-                # Phát tín hiệu (nếu cần cho các component khác)
+                # Phát tín hiệu báo đăng xuất thành công để MainWindow nhận và chuyển về màn hình login
                 self.logged_out.emit()
-                
-                # 3. Mở lại màn hình đăng nhập (Login) và đóng cửa sổ profile
-                try:
-                    from login import LoginWindow  # Thay đổi tên file/class login nếu nhóm dùng tên khác
-                    self.login_window = LoginWindow()
-                    self.login_window.show()
-                except ImportError:
-                    pass
-                
                 self.close()
             else:
                 QMessageBox.critical(self, "Lỗi", res.get("message"))

@@ -17,7 +17,7 @@ class MainWindow(QWidget):
         super().__init__()
 
         self.setWindowTitle("Study Management")
-        self.setFixedSize(960, 600)
+        self.resize(960, 600)
 
         # Tạo bộ chứa các trang
         self.stacked_widget = QStackedWidget()
@@ -61,18 +61,41 @@ class MainWindow(QWidget):
         # Xử lý sự kiện nếu tài khoản bị xóa thì quay về trang đăng nhập[cite: 5]
         self.profile_page.account_deleted.connect(self.on_account_deleted)
 
+        #Xử lý sk logout thành công 
+        self.profile_page.logged_out.connect(self.on_logged_out)
+
         self.stacked_widget.addWidget(self.profile_page)
         self.stacked_widget.setCurrentWidget(self.profile_page)
-        self.setFixedSize(960, 640)  # Điều chỉnh kích thước cửa sổ phù hợp với ProfileWindow
+        self.resize(960, 640)  
+        self.center_window()
 
     def on_logged_out(self):
+        # Xóa thông tin đăng nhập
+        self.login_page.username_input.clear()
+        self.login_page.password_input.clear()
+
+        # Quay về login page
         self.stacked_widget.setCurrentIndex(0)
-        self.setFixedSize(960, 600)
+        self.resize(960, 600)
+        self.center_window()
 
     def on_account_deleted(self):
-        # Quay về trang đăng nhập (index 0) khi tài khoản bị xóa
+        self.login_page.username_input.clear()
+        self.login_page.password_input.clear()
+        
+        # Quay về login page khi delete account
         self.stacked_widget.setCurrentIndex(0)
-        self.setFixedSize(960, 600)
+        self.resize(960, 600)
+        self.center_window()
+
+    # Xử lý lỗi để tự động canh cửa sổ ra center màn hình
+    def center_window(self):
+        screen = QApplication.primaryScreen().availableGeometry()
+        size = self.geometry()
+        self.move(
+            (screen.width() - size.width()) // 2,
+            (screen.height() - size.height()) // 2
+        )
 
 
 if __name__ == "__main__":
