@@ -1,13 +1,13 @@
 import random
 from api_worker import APIWorker
 from api_client import ClientPayloadBuilder
-from PySide6.QtWidgets import QDialog, QLabel, QPushButton, QVBoxLayout, QHBoxLayout
+from PySide6.QtWidgets import QDialog, QLabel, QMessageBox, QPushButton, QVBoxLayout, QHBoxLayout
 from PySide6.QtCore import Qt, Signal
 
 class LogoutDialog(QDialog):
     logout_success = Signal()
 
-    def __init__(self, token: str):
+    def __init__(self, token: str): #Cần token để mang đi gửi lên server để biết user nào đang muốn logout
         super().__init__()
         self.token = token
         self.setWindowTitle("Study Management - Đăng xuất")
@@ -53,7 +53,8 @@ class LogoutDialog(QDialog):
 
     def handle_logout(self):
         req_id = random.randint(1000, 9999)
-        # Payload chuẩn UC24
+
+        # file api_client.py chưa có hàm build_logout_payload, nên tạo trực tiếp ở đây
         payload = {
             "action": "AUTH_LOGOUT",
             "requestId": req_id,
@@ -77,6 +78,7 @@ class LogoutDialog(QDialog):
         else:
             self.logout_button.setEnabled(True)
             self.logout_button.setText("Đăng xuất")
+            QMessageBox.warning(self, "Lỗi", "Đăng xuất thất bại. Vui lòng kiểm tra lại kết nối!")
 
     def on_logout_error(self, _):
         self.logout_success.emit()
