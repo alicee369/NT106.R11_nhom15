@@ -5,7 +5,7 @@ import hmac
 import secrets
 from datetime import datetime, timedelta, timezone
 
-from models import (
+from server.Models import (
     LoginSession,
     PomodoroSettings,
     Session,

@@ -262,12 +262,10 @@ class ProfileWindow(QWidget):
         
         def on_logout_success(res):
             if res.get("success"):
-                QMessageBox.information(self, "Thông báo", res.get("message") or "Đăng xuất thành công!")
+                # Xóa sạch biến token lưu trữ ở máy
+                self.token = None                
                 
-                # 2. Xóa sạch biến token lưu trữ ở máy
-                self.token = None
-                
-                # Phát tín hiệu báo đăng xuất thành công để MainWindow nhận và chuyển về màn hình login
+                # Bắn tín hiệu logout ra ui_main.py để quay về màn hình đăng nhập
                 self.logged_out.emit()
                 self.close()
             else:

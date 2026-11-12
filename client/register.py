@@ -20,7 +20,7 @@ class RegisterWindow(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Vùng trái: Thương hiệu
+        # left layout 
         left_panel = QFrame(objectName="leftPanel")
         left_layout = QVBoxLayout(left_panel)
         left_layout.setContentsMargins(40, 40, 40, 40)
@@ -28,17 +28,17 @@ class RegisterWindow(QWidget):
 
         left_layout.addWidget(QLabel("◈ StudyManagement", objectName="brandTitle"))
         left_layout.addStretch()
-        left_layout.addWidget(QLabel("Build your\nlearning journey.", objectName="brandHeading"))
-        desc = QLabel("Tạo không gian học tập của riêng bạn.\nBắt đầu lên kế hoạch và theo dõi tiến độ.", objectName="brandDescription")
+        left_layout.addWidget(QLabel("Build your\nlearning journey", objectName="brandHeading"))
+        desc = QLabel("Tạo không gian học tập của riêng bạn\nBắt đầu lên kế hoạch và theo dõi tiến độ", objectName="brandDescription")
         desc.setWordWrap(True)
         left_layout.addWidget(desc)
         left_layout.addStretch()
 
-        # Vùng phải: Form đăng ký
+        # right layout
         right_panel = QFrame(objectName="rightPanel")
-        form_layout = QVBoxLayout(right_panel)
-        form_layout.setContentsMargins(40, 28, 40, 28)
-        form_layout.setSpacing(10)
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(40, 28, 40, 28)
+        right_layout.setSpacing(10)
 
         subtitle = QLabel("Điền thông tin để bắt đầu sử dụng.", objectName="formSubtitle")
         subtitle.setWordWrap(True)
@@ -56,22 +56,22 @@ class RegisterWindow(QWidget):
         login_text.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse)
         login_text.linkActivated.connect(lambda: self.login_requested.emit())
 
-        form_layout.addStretch()
-        form_layout.addWidget(QLabel("Tạo tài khoản", objectName="formTitle"))
-        form_layout.addWidget(subtitle)
-        form_layout.addSpacing(10)
-        form_layout.addWidget(QLabel("Tên đăng nhập"))
-        form_layout.addWidget(self.username_input)
-        form_layout.addWidget(QLabel("Tên hiển thị"))
-        form_layout.addWidget(self.display_name_input)
-        form_layout.addWidget(QLabel("Mật khẩu"))
-        form_layout.addWidget(self.password_input)
-        form_layout.addWidget(QLabel("Nhập lại mật khẩu"))
-        form_layout.addWidget(self.confirm_password_input)
-        form_layout.addSpacing(5)
-        form_layout.addWidget(self.register_button)
-        form_layout.addWidget(login_text)
-        form_layout.addStretch()
+        right_layout.addStretch()
+        right_layout.addWidget(QLabel("Tạo tài khoản", objectName="formTitle"))
+        right_layout.addWidget(subtitle)
+        right_layout.addSpacing(10)
+        right_layout.addWidget(QLabel("Tên đăng nhập"))
+        right_layout.addWidget(self.username_input)
+        right_layout.addWidget(QLabel("Tên hiển thị"))
+        right_layout.addWidget(self.display_name_input)
+        right_layout.addWidget(QLabel("Mật khẩu"))
+        right_layout.addWidget(self.password_input)
+        right_layout.addWidget(QLabel("Nhập lại mật khẩu"))
+        right_layout.addWidget(self.confirm_password_input)
+        right_layout.addSpacing(5)
+        right_layout.addWidget(self.register_button)
+        right_layout.addWidget(login_text)
+        right_layout.addStretch()
 
         main_layout.addWidget(left_panel, 1)
         main_layout.addWidget(right_panel, 1)
@@ -125,7 +125,7 @@ class RegisterWindow(QWidget):
             QMessageBox.information(self, "Thành công", response.get("message"))
             self.login_requested.emit()
         else:
-            QMessageBox.critical(self, "Đăng ký thất bại", response.get("message"))
+            QMessageBox.critical(self, "Đăng ký thất bại", response.get("message")) # handle case when the username already exists, server checks in the database and returns message to the client
 
     def on_register_error(self, error_msg):
         self.register_button.setEnabled(True)

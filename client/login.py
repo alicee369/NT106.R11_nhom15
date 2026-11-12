@@ -10,7 +10,7 @@ from PySide6.QtCore import Qt, Signal
 
 class LoginWindow(QWidget):
     register_requested = Signal()
-    login_success = Signal(str) #str là kdl của token
+    login_success = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -22,7 +22,7 @@ class LoginWindow(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # layout trái
+        # left layout 
         left_panel = QFrame(objectName="leftPanel")
         left_layout = QVBoxLayout(left_panel)
         left_layout.setContentsMargins(40, 40, 40, 40)
@@ -30,13 +30,13 @@ class LoginWindow(QWidget):
         
         left_layout.addWidget(QLabel("◈ StudyManagement", objectName="brandTitle"))
         left_layout.addStretch()
-        left_layout.addWidget(QLabel("Learn smarter.\nGrow further.", objectName="brandHeading"))
-        desc = QLabel("Không gian học tập cá nhân của bạn.\nLập kế hoạch, quản lý và phát triển mỗi ngày.", objectName="brandDescription")
+        left_layout.addWidget(QLabel("Learn smarter\nGrow further", objectName="brandHeading"))
+        desc = QLabel("Không gian học tập cá nhân của bạn\nLập kế hoạch, quản lý và phát triển mỗi ngày", objectName="brandDescription")
         desc.setWordWrap(True) #bật tính năng tự động xuống dòng
         left_layout.addWidget(desc)
         left_layout.addStretch()
 
-        # layout phải
+        # right layout
         right_panel = QFrame(objectName="rightPanel")
         form_layout = QVBoxLayout(right_panel)
         form_layout.setContentsMargins(40, 40, 40, 40)

@@ -3,54 +3,40 @@ from api_worker import APIWorker
 from api_client import ClientPayloadBuilder
 
 from PySide6.QtWidgets import (
-    QWidget,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QVBoxLayout,
-    QHBoxLayout,
-    QFrame,
-    QMessageBox,
-    QScrollArea,
+    QWidget, QLabel, QLineEdit, QPushButton,
+    QVBoxLayout, QHBoxLayout, QFrame, QMessageBox, QScrollArea,
 )
 from PySide6.QtCore import Qt, Signal
 
-
 class EditProfileWindow(QWidget):
-    profile_updated = Signal() # tạo tín hiệu báo cập nhật thành công
+    profile_updated = Signal() 
 
     def __init__(self, token: str):
         super().__init__()
-        self.token = token  # Nhận token phiên làm việc từ MainWindow gửi sang
+        self.token = token  
 
-        # Cấu hình cửa sổ
         self.setWindowTitle("Study Management - Cập nhật hồ sơ")
         self.resize(900, 750)
         self.setMinimumSize(800, 600)
 
-        # Bố cục ngoài cùng cho cửa sổ chính chứa ScrollArea
         outer_layout = QVBoxLayout(self)
         outer_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Tạo QScrollArea để chống tràn/đè chữ khi thu nhỏ cửa sổ
+        # Tạo QScrollArea để chống tràn/đè nd khi thu nhỏ cửa sổ
         scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidgetResizable(True) # Tự động chỉnh kích thước nd bên trong khi thay đổi kích thước cửa sổ
         scroll_area.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
 
         # Container widget chứa toàn bộ nội dung bên trong scroll
         container_widget = QWidget()
         container_widget.setObjectName("containerWidget")
-        
-        # =========================
-        # BỐ CỤC CHÍNH BÊN TRONG
-        # =========================
+
+        # === BỐ CỤC CHÍNH BÊN TRONG ===
         main_layout = QVBoxLayout(container_widget)
         main_layout.setContentsMargins(32, 24, 32, 24)
         main_layout.setSpacing(16)
 
-        # =========================
-        # THANH ĐẦU TRANG
-        # =========================
+        # === HEADER ===
         header_layout = QHBoxLayout()
 
         self.brand_title = QLabel("◈ StudyManagement")
@@ -63,21 +49,15 @@ class EditProfileWindow(QWidget):
         header_layout.addStretch()
         header_layout.addWidget(self.header_note)
 
-        # =========================
-        # TIÊU ĐỀ
-        # =========================
+        # === TIÊU ĐỀ ===
         self.page_title = QLabel("Cập nhật thông tin")
         self.page_title.setObjectName("pageTitle")
 
-        self.page_description = QLabel(
-            "Thay đổi thông tin hiển thị hoặc cập nhật mật khẩu tài khoản."
-        )
-        self.page_description.setObjectName("pageDescription")
-        self.page_description.setWordWrap(True)
+        self.page_note = QLabel("Thay đổi thông tin hiển thị hoặc cập nhật mật khẩu tài khoản.")
+        self.page_note.setObjectName("pageNote")
+        self.page_note.setWordWrap(True)
 
-        # =========================
-        # THẺ THÔNG TIN CÁ NHÂN
-        # =========================
+        # === THẺ THÔNG TIN CÁ NHÂN ===
         info_card = QFrame()
         info_card.setObjectName("formCard")
 
@@ -98,9 +78,7 @@ class EditProfileWindow(QWidget):
 
         info_card.setLayout(info_layout)
 
-        # =========================
-        # THẺ ĐỔI MẬT KHẨU
-        # =========================
+        # === THẺ ĐỔI MẬT KHẨU ===
         password_card = QFrame()
         password_card.setObjectName("formCard")
 
@@ -113,32 +91,18 @@ class EditProfileWindow(QWidget):
 
         self.current_password_label = QLabel("Mật khẩu hiện tại")
         self.current_password_input = QLineEdit()
-        self.current_password_input.setPlaceholderText(
-            "Nhập mật khẩu hiện tại"
-        )
-        self.current_password_input.setEchoMode(
-            QLineEdit.EchoMode.Password
-        )
+        self.current_password_input.setPlaceholderText("Nhập mật khẩu hiện tại")
+        self.current_password_input.setEchoMode(QLineEdit.EchoMode.Password)
 
         self.new_password_label = QLabel("Mật khẩu mới")
         self.new_password_input = QLineEdit()
-        self.new_password_input.setPlaceholderText(
-            "Nhập mật khẩu mới"
-        )
-        self.new_password_input.setEchoMode(
-            QLineEdit.EchoMode.Password
-        )
+        self.new_password_input.setPlaceholderText("Nhập mật khẩu mới")
+        self.new_password_input.setEchoMode(QLineEdit.EchoMode.Password)
 
-        self.confirm_password_label = QLabel(
-            "Xác nhận mật khẩu mới"
-        )
+        self.confirm_password_label = QLabel("Xác nhận mật khẩu mới")
         self.confirm_password_input = QLineEdit()
-        self.confirm_password_input.setPlaceholderText(
-            "Nhập lại mật khẩu mới"
-        )
-        self.confirm_password_input.setEchoMode(
-            QLineEdit.EchoMode.Password
-        )
+        self.confirm_password_input.setPlaceholderText("Nhập lại mật khẩu mới")
+        self.confirm_password_input.setEchoMode(QLineEdit.EchoMode.Password)
 
         password_layout.addWidget(self.password_title)
         password_layout.addWidget(self.current_password_label)
@@ -150,9 +114,7 @@ class EditProfileWindow(QWidget):
 
         password_card.setLayout(password_layout)
 
-        # =========================
-        # CÁC NÚT CHỨC NĂNG
-        # =========================
+        # === BUTTON ===
         button_layout = QHBoxLayout()
         button_layout.setSpacing(12)
 
@@ -170,105 +132,36 @@ class EditProfileWindow(QWidget):
         button_layout.addWidget(self.cancel_button)
         button_layout.addWidget(self.save_button)
 
-        # =========================
-        # GHÉP BỐ CỤC VÀO CONTAINER
-        # =========================
+        # GHÉP BỐ CỤC VÀO MAIN_LAYOUT - MAIN_LAYOUT ĐƯỢC NẰM TRONG CONTAINER
         main_layout.addLayout(header_layout)
         main_layout.addWidget(self.page_title)
-        main_layout.addWidget(self.page_description)
+        main_layout.addWidget(self.page_note)
         main_layout.addWidget(info_card)
         main_layout.addWidget(password_card)
         main_layout.addLayout(button_layout)
 
-        scroll_area.setWidget(container_widget)
+        scroll_area.setWidget(container_widget) #set dùng cho 1 widget duy nhất
         outer_layout.addWidget(scroll_area)
 
-        # =========================
-        # ĐỊNH DẠNG GIAO DIỆN
-        # =========================
         self.setStyleSheet("""
-            QWidget {
-                background-color: #0B1020;
-                color: #F1F5F9;
-                font-size: 13px;
-            }
-            QLabel {
-                background-color: transparent;
-            }
-            QLabel#brandTitle {
-                color: #C4B5FD;
-                font-size: 19px;
-                font-weight: bold;
-            }
-            QLabel#headerNote {
-                color: #94A3B8;
-                font-size: 11px;
-            }
-            QLabel#pageTitle {
-                color: #F8FAFC;
-                font-size: 24px;
-                font-weight: bold;
-            }
-            QLabel#pageDescription {
-                color: #94A3B8;
-                font-size: 13px;
-            }
-            QFrame#formCard {
-                background-color: #171D2E;
-                border: 1px solid #28334B;
-                border-radius: 10px;
-            }
-            QLabel#sectionTitle {
-                color: #F8FAFC;
-                font-size: 15px;
-                font-weight: bold;
-            }
-            QLineEdit {
-                background-color: #0B1020;
-                color: #F8FAFC;
-                border: 1px solid #35415A;
-                border-radius: 6px;
-                padding: 7px 10px;
-                min-height: 26px;
-            }
-            QLineEdit:focus {
-                border: 1px solid #8B5CF6;
-            }
-            QPushButton {
-                border: none;
-                border-radius: 6px;
-                padding: 6px 16px;
-                font-weight: bold;
-            }
-            QPushButton#cancelButton {
-                background-color: #263248;
-                color: #E2E8F0;
-                border: 1px solid #35415A;
-            }
-            QPushButton#cancelButton:hover {
-                background-color: #35435D;
-            }
-            QPushButton#saveButton {
-                background-color: #7C3AED;
-                color: white;
-            }
-            QPushButton#saveButton:hover {
-                background-color: #6D28D9;
-            }
-            QScrollBar:vertical {
-                border: none;
-                background: #0B1020;
-                width: 8px;
-                margin: 0px;
-            }
-            QScrollBar::handle:vertical {
-                background: #27334D;
-                border-radius: 4px;
-                min-height: 20px;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
+            QWidget {background-color: #0B1020; color: #F1F5F9; font-size: 13px;}
+            QLabel {background-color: transparent;}
+            QLabel#brandTitle {color: #C4B5FD; font-size: 19px; font-weight: bold;}
+            QLabel#headerNote {color: #94A3B8; font-size: 11px;}
+            QLabel#pageTitle {color: #F8FAFC; font-size: 24px; font-weight: bold;}
+            QLabel#pageDescription {color: #94A3B8; font-size: 13px;}
+            QFrame#formCard {background-color: #171D2E; border: 1px solid #28334B; border-radius: 10px;}
+            QLabel#sectionTitle {color: #F8FAFC;font-size: 15px;font-weight: bold;}
+            QLineEdit {background-color: #0B1020; color: #F8FAFC; border: 1px solid #35415A; border-radius: 6px; padding: 7px 10px; min-height: 26px;}
+            QLineEdit:focus {border: 1px solid #8B5CF6;}
+            QPushButton {border: none; border-radius: 6px; padding: 6px 16px; font-weight: bold;}
+            QPushButton#cancelButton {background-color: #263248; color: #E2E8F0; border: 1px solid #35415A;}
+            QPushButton#cancelButton:hover {background-color: #35435D;}
+            QPushButton#saveButton {background-color: #7C3AED; color: white;}
+            QPushButton#saveButton:hover {background-color: #6D28D9;}
+            QScrollBar:vertical {border: none; background: #0B1020; width: 8px; margin: 0px;}
+            QScrollBar::handle:vertical {background: #27334D;border-radius: 4px; min-height: 20px;}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {height: 0px;}
         """)
 
     def handle_save(self):
@@ -277,12 +170,16 @@ class EditProfileWindow(QWidget):
         new_password = self.new_password_input.text()
         confirm_password = self.confirm_password_input.text()
 
-        if not display_name:
-            self.show_message("Thiếu thông tin", "Vui lòng nhập tên hiển thị mới.", QMessageBox.Icon.Warning)
+        # Kiểm tra xem usercos nhập ít nhất 1 info gì mới ko
+        is_changing_name = bool(display_name)
+        is_changing_password = bool(current_password or new_password or confirm_password)
+
+        if not is_changing_name and not is_changing_password:
+            self.show_message("Thiếu thông tin", "Vui lòng nhập tên hiển thị mới hoặc thông tin đổi mật khẩu.", QMessageBox.Icon.Warning)
             return
 
-        # Kiểm tra tính hợp lệ nếu người dùng nhập thông tin đổi mật khẩu
-        if current_password or new_password or confirm_password:
+        # Kiểm tra tính hợp lệ nếu nhập thông tin đổi mật khẩu
+        if is_changing_password:
             if not current_password:
                 self.show_message("Thiếu thông tin", "Vui lòng nhập mật khẩu hiện tại để xác thực.", QMessageBox.Icon.Warning)
                 return
@@ -293,7 +190,7 @@ class EditProfileWindow(QWidget):
                 self.show_message("Mật khẩu không khớp", "Mật khẩu mới và xác nhận nhập lại không trùng khớp.", QMessageBox.Icon.Warning)
                 return
 
-        # Đóng gói dữ liệu payload UC26 gửi lên server
+        # Đóng gói dữ liệu payload gửi lên server
         req_id = random.randint(1000, 9999)
         payload = {
             "action": "PROFILE_UPDATE",
@@ -321,7 +218,7 @@ class EditProfileWindow(QWidget):
 
         if response.get("success"):
             self.show_message("Thành công", response.get("message", "Cập nhật hồ sơ thành công."), QMessageBox.Icon.Information)
-            self.profile_updated.emit() #phát signal báo thành công
+            self.profile_updated.emit() 
             self.close()
         else:
             self.show_message("Thất bại", response.get("message"), QMessageBox.Icon.Critical)
@@ -338,8 +235,8 @@ class EditProfileWindow(QWidget):
         msg.setText(message)
         msg.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg.setStyleSheet("""
-            QMessageBox { background-color: white; }
-            QLabel { background-color: transparent; color: #1F2937; font-size: 14px; }
+            QMessageBox { background-color: #1F2937; }
+            QLabel { background-color: transparent; color: #F3F4F6; font-size: 14px; }
             QPushButton { background-color: #7C3AED; color: white; border: none; border-radius: 6px; padding: 6px 18px; font-weight: bold; }
             QPushButton:hover { background-color: #6D28D9; }
         """)
