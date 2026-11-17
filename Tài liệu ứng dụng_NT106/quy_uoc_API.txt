@@ -1,0 +1,34 @@
+﻿--------------------------------------------------
+### QUY ƯỚC CHUNG (GENERAL CONVENTIONS)
+--------------------------------------------------
+1. Kiểu dữ liệu (Pseudo-code):
+- int: Số nguyên
+- float: Số thực
+- str: Chuỗi (String)
+- bool: Boolean (true/false)
+- time: Chuỗi thời gian chuẩn ISO 8601 (VD: "2026-11-17T09:30:00Z" lưu theo UTC)
+- array: Mảng. (Bản cập nhật này đã định nghĩa chi tiết cấu trúc object bên trong mảng, ví dụ: [ { "id": int } ] hoặc mảng số nguyên [ int ]).
+
+
+2. Enum & Giá trị mặc định:
+- viewMode (Lịch): "DAY", "WEEK", "MONTH"
+- eventType (Lịch): "STUDY", "EXAM", "DEADLINE"
+- filterType (Thống kê): "DAY", "WEEK", "MONTH"
+- period (Bảng xếp hạng): "ALL_TIME", "WEEKLY", "MONTHLY"
+
+
+3. Xác thực (Authentication):
+- Các API (NGOẠI TRỪ UC22: Register và UC23: Login) ĐỀU BẮT BUỘC có Header: `Authorization: Bearer <token>`
+- Nếu Token hết hạn hoặc sai, Server trả về HTTP Status 401 kèm JSON:
+{
+  "action": "ACTION_NAME",
+  "requestId": int,
+  "success": false,
+  "errorCode": "TOKEN_EXPIRED", // Hoặc "TOKEN_INVALID", "UNAUTHORIZED"
+  "message": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+  "data": null
+}
+
+
+4. Xử lý danh sách rỗng (Empty State):
+- Không báo lỗi. Trả về `success: true` và mảng rỗng `[]`.

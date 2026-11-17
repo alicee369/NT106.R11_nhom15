@@ -1,0 +1,131 @@
+﻿--------------------------------------------------
+### Xem chi tiết nhóm và thành viên (API Mới bổ sung cho UC19/20)
+- URL Endpoint: /api/group/detail
+- Method: POST
+- Header: Authorization: Bearer <token>
+--------------------------------------------------
+// Xem tiến độ của nhau
+    //Client:
+{
+  "action": "GROUP_GET_DETAIL",
+  "requestId": int,
+  "data": { "groupId": int }
+}
+    //Server:
+        //success
+{
+  "action": "GROUP_GET_DETAIL",
+  "requestId": int,
+  "success": true,
+  "errorCode": null,
+  "message": "Thành công.",
+  "data": {
+    "groupId": int,
+    "planName": str,
+    "members": [
+      {
+        "userId": int,
+        "displayName": str,
+        "progressPercent": float
+      }
+    ]
+  }
+}
+
+
+--------------------------------------------------
+### UC19: Tạo mã mời tham gia nhóm
+- URL Endpoint: /api/group/invite-code
+- Method: POST
+--------------------------------------------------
+// Tạo mã mời 
+    //Client:
+{
+  "action": "GROUP_CREATE_INVITE",
+  "requestId": int,
+  "data": {
+    "planId": int, 
+    "expiresAt": time,
+    "maxUses": int 
+  }
+}
+    //Server:
+        //fail
+{
+  "action": "GROUP_CREATE_INVITE",
+  "requestId": int,
+  "success": false,
+  "errorCode": "PLAN_NOT_FOUND", 
+  "message": "Không tìm thấy kế hoạch hoặc không có quyền tạo mã.",
+  "data": null
+}
+
+
+--------------------------------------------------
+### UC20: Tham gia nhóm học tập
+- URL Endpoint: /api/group/join
+- Method: POST
+--------------------------------------------------
+// Tham gia nhóm
+    //Client:
+{
+  "action": "GROUP_JOIN",
+  "requestId": int,
+  "data": { "inviteCode": str }
+}
+    //Server:
+        //success
+{
+  "action": "GROUP_JOIN",
+  "requestId": int,
+  "success": true,
+  "errorCode": null,
+  "message": "Thành công.",
+  "data": {
+    "groupId": int,
+    "planName": str,
+    "joinedAt": time
+  }
+}
+        //fail 
+{
+  "action": "GROUP_JOIN",
+  "requestId": int,
+  "success": false,
+  "errorCode": "GROUP_INVITE_EXPIRED", 
+  "message": "Mã code đã hết hạn hoặc bạn đã tham gia.",
+  "data": null
+}
+
+
+--------------------------------------------------
+### UC21: Xem bảng xếp hạng
+- URL Endpoint: /api/leaderboard/view
+- Method: POST
+--------------------------------------------------
+// Xem bảng xếp hạng
+    //Client:
+{
+  "action": "LEADERBOARD_GET",
+  "requestId": int,
+  "data": { "period": str, "limit": int }
+}
+    //Server:
+        //success
+{
+  "action": "LEADERBOARD_GET",
+  "requestId": int,
+  "success": true,
+  "errorCode": null,
+  "message": "Thành công.",
+  "data": {
+    "currentUserRank": int,
+    "leaderboard": [
+      {
+        "rank": int,
+        "displayName": str,
+        "totalStudyMinutes": int 
+      }
+    ]
+  }
+}

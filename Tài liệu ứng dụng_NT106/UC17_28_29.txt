@@ -1,0 +1,94 @@
+﻿--------------------------------------------------
+### UC17: Kiểm tra mở khóa huy hiệu (Nếu làm API độc lập)
+- URL Endpoint: /api/badge/check-unlock
+- Method: POST
+- Header: Authorization: Bearer <token>
+--------------------------------------------------
+// Client gọi sau khi học xong để check:
+    //Client:
+{
+  "action": "BADGE_CHECK_UNLOCK",
+  "requestId": int,
+  "data": { "sessionId": int }
+}
+    //Server:
+        //success
+{
+  "action": "BADGE_CHECK_UNLOCK",
+  "requestId": int,
+  "success": true,
+  "errorCode": null,
+  "message": "Kiểm tra thành công.",
+  "data": {
+    "newlyUnlockedBadges": [
+      {
+        "badgeId": int,
+        "badgeName": str,
+        "iconUrl": str,
+        "description": str
+      }
+    ]
+  }
+}
+
+
+--------------------------------------------------
+### UC28: Xem bộ sưu tập huy hiệu
+- URL Endpoint: /api/badge/list
+- Method: POST
+--------------------------------------------------
+// Xem danh sách huy hiệu
+    //Client:
+{
+  "action": "BADGE_GET_LIST",
+  "requestId": int,
+  "data": {}
+}
+    //Server:
+        //success
+{
+  "action": "BADGE_GET_LIST",
+  "requestId": int,
+  "success": true,
+  "errorCode": null,
+  "message": "Thành công.",
+  "data": {
+    "badges": [
+      {
+        "badgeId": int,
+        "badgeName": str,
+        "iconUrl": str,
+        "description": str,
+        "isUnlocked": bool,
+        "isDisplayed": bool,
+        "unlockedAt": time // ISO 8601, null nếu chưa mở khóa
+      }
+    ]
+  }
+}
+
+
+--------------------------------------------------
+### UC29: Trưng bày huy hiệu nổi bật
+- URL Endpoint: /api/badge/display
+- Method: POST
+--------------------------------------------------
+// Trưng bày huy hiệu nổi bật
+    //Client:
+{
+  "action": "BADGE_SET_DISPLAY",
+  "requestId": int,
+  "data": {
+    "badgeIds": [ int ] // Mảng chứa ID (số nguyên) các huy hiệu muốn trưng bày
+  }
+}
+    //Server:
+        //fail 
+{
+  "action": "BADGE_SET_DISPLAY",
+  "requestId": int,
+  "success": false,
+  "errorCode": "BADGE_LIMIT_EXCEEDED", 
+  "message": "Vượt quá số lượng huy hiệu hoặc chưa sở hữu.",
+  "data": null
+}
