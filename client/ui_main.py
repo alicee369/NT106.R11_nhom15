@@ -1,32 +1,26 @@
 import sys
-
 from PySide6.QtWidgets import (
-    QApplication,
-    QWidget,
-    QVBoxLayout,
-    QStackedWidget,
+    QApplication, QWidget, QVBoxLayout,
+    QStackedWidget, #chứa nhiều page, tại 1 thời điểm chỉ hiện 1 page, các page khác nằm chờ bên dưới
 )
 
 from login import LoginWindow
 from register import RegisterWindow
-from profile import ProfileWindow  # Nhập ProfileWindow từ file profile.py[cite: 5]
-
+from profile import ProfileWindow 
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Study Management")
-        self.setFixedSize(960, 600)
+        self.resize(960, 600)
 
-        # Tạo bộ chứa các trang
-        self.stacked_widget = QStackedWidget()
+        self.stacked_widget = QStackedWidget() # Nơi chứa các page
 
-        # Tạo form đăng nhập và đăng ký
-        self.login_page = LoginWindow()  #[cite: 3]
-        self.register_page = RegisterWindow()  #[cite: 6]
+        # Tạo page login và reg
+        self.login_page = LoginWindow() 
+        self.register_page = RegisterWindow()  
 
-        # Đưa hai form vào QStackedWidget
         self.stacked_widget.addWidget(self.login_page)
         self.stacked_widget.addWidget(self.register_page)
 
@@ -40,32 +34,61 @@ class MainWindow(QWidget):
             lambda: self.stacked_widget.setCurrentIndex(0)
         )
 
-        # Lắng nghe sự kiện đăng nhập thành công từ LoginWindow[cite: 3]
+        # Bắt tin hiệu login thành công từ LoginWindow để chạy hàm on_login_success
         self.login_page.login_success.connect(self.on_login_success)
 
-        # Đặt QStackedWidget vào cửa sổ chính
+        # Đặt stacked_widget vào layout 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.stacked_widget)
 
         self.setLayout(layout)
 
+    # TỪ LOGIN SANG PROFILE
     def on_login_success(self, token: str):
-        # Khởi tạo màn hình profile với token nhận được sau khi đăng nhập thành công[cite: 3, 5]
-        self.profile_page = ProfileWindow(token)  #[cite: 5]
+        if hasattr(self, 'profile_page') and self.profile_page is not None: # Nếu profile đã tồn tại và có giá trị thì remove và delete tránh memory leak
+            self.stacked_widget.removeWidget(self.profile_page)
+            self.profile_page.deleteLater()
+
+        self.profile_page = ProfileWindow(token)  
         
-        # Xử lý sự kiện nếu tài khoản bị xóa thì quay về trang đăng nhập[cite: 5]
+        # Xử lý case nếu tk bị xóa thì quay về login page
         self.profile_page.account_deleted.connect(self.on_account_deleted)
+
+        #vXử lý case logout thì quay về login page
+        self.profile_page.logged_out.connect(self.on_logged_out)
 
         self.stacked_widget.addWidget(self.profile_page)
         self.stacked_widget.setCurrentWidget(self.profile_page)
-        self.setFixedSize(960, 640)  # Điều chỉnh kích thước cửa sổ phù hợp với ProfileWindow
+        self.resize(960, 640)  
+        self.center_window()
+
+    def on_logged_out(self):
+        # Nhận tín hiệu emit ở profile.py và xóa thông tin đăng nhập
+        self.login_page.username_input.clear()
+        self.login_page.password_input.clear()
+
+        # Quay về login page
+        self.stacked_widget.setCurrentIndex(0)
+        self.resize(960, 600)
+        self.center_window()
 
     def on_account_deleted(self):
-        # Quay về trang đăng nhập (index 0) khi tài khoản bị xóa
+        self.login_page.username_input.clear()
+        self.login_page.password_input.clear()
+        
         self.stacked_widget.setCurrentIndex(0)
-        self.setFixedSize(960, 600)
+        self.resize(960, 600)
+        self.center_window()
 
+    # Xử lý lỗi để tự động canh cửa sổ ra center màn hình
+    def center_window(self):
+        screen = QApplication.primaryScreen().availableGeometry()
+        size = self.geometry()
+        self.move(
+            (screen.width() - size.width()) // 2,
+            (screen.height() - size.height()) // 2
+        )
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
