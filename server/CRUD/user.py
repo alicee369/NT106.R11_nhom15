@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from Models import LoginSession, PomodoroSettings, StudyPlan, User
+from Models import LoginSession, PomodoroSettings, StudyPlan, User, reminder
 from sqlmodel import Session, delete, select
 
 
@@ -33,6 +33,7 @@ def register_user(
     db.refresh(user)
 
     db.add(PomodoroSettings(user_id=user.id))
+    db.add(reminder(user_id=user.id))
     db.commit()
     db.refresh(user)
     return user
