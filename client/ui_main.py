@@ -239,79 +239,69 @@ class MainMenuPage(QWidget):
         self.switch_page("pomodoro")
         self.pomodoro_page.show()
 
-        def _on_pomodoro_mini_toggled(self, is_mini: bool):
-            if is_mini:
-                if self.page_stack.currentWidget() is self.pomodoro_page:
-                    self.switch_page("dashboard")
-                return
-
-            self._register_page("pomodoro", self.pomodoro_page)
-            self.switch_page("pomodoro")
-            self.pomodoro_page.show()
-
-        def _on_reminder_config_changed(self, _new_config: dict):
+    def _on_reminder_config_changed(self, _new_config: dict):
             self.notified_events.clear()
             self._check_reminders()
 
-        def _check_reminders(self):
-            if not hasattr(self, "reminders_page") or not hasattr(self, "schedule_page"):
-                return
+    def _check_reminders(self):
+        if not hasattr(self, "reminders_page") or not hasattr(self, "schedule_page"):
+            return
 
-            config = self.reminders_page.current_config
-            events = self.schedule_page.events_cache
-            now_utc = datetime.now(timezone.utc)
+        config = self.reminders_page.current_config
+        events = self.schedule_page.events_cache
+        now_utc = datetime.now(timezone.utc)
 
-            for event in events:
-                event_id = event.get("eventId")
-                raw_start = event.get("startTime")
-                event_type = str(event.get("eventType") or "STUDY").upper()
-                title = str(event.get("title") or "Sự kiện")
+        for event in events:
+            event_id = event.get("eventId")
+            raw_start = event.get("startTime")
+            event_type = str(event.get("eventType") or "STUDY").upper()
+            title = str(event.get("title") or "Sự kiện")
 
-                if not event_id or not raw_start:
-                    continue
+            if not event_id or not raw_start:
+                continue
 
-                if event_type == "DEADLINE":
-                    rule = config.get("deadlineReminder", {})
-                    type_label = "Deadline"
-                else:
-                    rule = config.get("studyReminder", {})
-                    type_label = "Lịch thi" if event_type == "EXAM" else "Giờ học"
+            if event_type == "DEADLINE":
+                rule = config.get("deadlineReminder", {})
+                type_label = "Deadline"
+            else:
+                rule = config.get("studyReminder", {})
+                type_label = "Lịch thi" if event_type == "EXAM" else "Giờ học"
 
-                if not rule.get("enabled", False):
-                    continue
+            if not rule.get("enabled", False):
+                continue
 
-                notify_before = int(rule.get("notifyBeforeMinutes", 0))
+            notify_before = int(rule.get("notifyBeforeMinutes", 0))
 
-                try:
-                    cleaned = str(raw_start).replace("Z", "+00:00")
-                    start_dt = datetime.fromisoformat(cleaned)
-                    if start_dt.tzinfo is None:
-                        start_dt = start_dt.astimezone()
-                    start_utc = start_dt.astimezone(timezone.utc)
-                except ValueError:
-                    continue
+            try:
+                cleaned = str(raw_start).replace("Z", "+00:00")
+                start_dt = datetime.fromisoformat(cleaned)
+                if start_dt.tzinfo is None:
+                    start_dt = start_dt.astimezone()
+                start_utc = start_dt.astimezone(timezone.utc)
+            except ValueError:
+                continue
 
-                remind_time_utc = start_utc - timedelta(minutes=notify_before)
+            remind_time_utc = start_utc - timedelta(minutes=notify_before)
 
-                if remind_time_utc <= now_utc <= start_utc:
-                    notify_key = f"{event_id}_{raw_start}_{notify_before}"
+            if remind_time_utc <= now_utc <= start_utc:
+                notify_key = f"{event_id}_{raw_start}_{notify_before}"
 
-                    if notify_key not in self.notified_events:
-                        self.notified_events.add(notify_key)
-                        local_time_str = start_utc.astimezone().strftime("%H:%M ngày %d/%m/%Y")
+                if notify_key not in self.notified_events:
+                    self.notified_events.add(notify_key)
+                    local_time_str = start_utc.astimezone().strftime("%H:%M ngày %d/%m/%Y")
 
-                        QMessageBox.information(
-                            self,
-                            f"🔔 Nhắc nhở {type_label}",
-                            f"Sự kiện: {title}\n"
-                            f"Thời gian diễn ra: {local_time_str}\n"
-                            f"(Báo trước {notify_before} phút theo cài đặt của bạn)"
-                        )
+                    QMessageBox.information(
+                        self,
+                        f"🔔 Nhắc nhở {type_label}",
+                        f"Sự kiện: {title}\n"
+                        f"Thời gian diễn ra: {local_time_str}\n"
+                        f"(Báo trước {notify_before} phút theo cài đặt của bạn)"
+                    )
 
-        def closeEvent(self, event):
-            if hasattr(self, "reminder_timer"):
-                self.reminder_timer.stop()
-            super().closeEvent(event)
+    def closeEvent(self, event):
+        if hasattr(self, "reminder_timer"):
+            self.reminder_timer.stop()
+        super().closeEvent(event)
 
 class MainWindow(QWidget):
     def __init__(self):
