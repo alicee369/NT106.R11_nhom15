@@ -37,6 +37,7 @@ class ClientPayloadBuilder:
         # UC12: Reminder
         "REMINDER_CONFIG_GET": "/api/reminder/config/get",
         "REMINDER_CONFIG_UPDATE": "/api/reminder/config/update",
+        "REMINDER_GET_UPCOMING": "/api/reminder/upcoming",
     }
 
     @classmethod
@@ -331,5 +332,20 @@ class ClientPayloadBuilder:
                     "enabled": deadline_enabled,
                     "notifyBeforeMinutes": deadline_minutes,
                 },
+            },
+        }
+
+    @staticmethod
+    def build_reminder_upcoming_payload(
+        req_id: int,
+        window_minutes: Optional[int] = 1440,
+        only_due_now: bool = False,
+    ) -> dict:
+        return {
+            "action": "REMINDER_GET_UPCOMING",
+            "requestId": req_id,
+            "data": {
+                "windowMinutes": window_minutes,
+                "onlyDueNow": only_due_now,
             },
         }
