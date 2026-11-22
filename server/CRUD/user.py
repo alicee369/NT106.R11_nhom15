@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from models import LoginSession, PomodoroSettings, StudyPlan, User
+from Models import LoginSession, PomodoroSettings, StudyPlan, User
 from sqlmodel import Session, delete, select
 
 
@@ -47,7 +47,7 @@ def login_user(
 
     if user is None or user.password != password:
         raise ValueError("Tên đăng nhập hoặc mật khẩu không chính xác.")
-
+    db.exec(delete(LoginSession).where(LoginSession.user_id == user.id))
     token = f"user-{user.id}-{utc_now().timestamp()}"
     login_session = LoginSession(
         user_id=user.id,

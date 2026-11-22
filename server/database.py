@@ -1,4 +1,5 @@
-from sqlmodel import Session, create_engine
+import Models
+from sqlmodel import Session, SQLModel, create_engine
 
 SUPABASE_URL = "postgresql+psycopg2://postgres.spzczfwxdjtguaurwnct:aetoichanhetDoanNT106@aws-0-ap-south-1.pooler.supabase.com:5432/postgres"
 engine = create_engine(SUPABASE_URL, echo=True, pool_pre_ping=True)
@@ -10,3 +11,7 @@ engine = create_engine(SUPABASE_URL, echo=True, pool_pre_ping=True)
 def get_session():
     with Session(engine) as session:
         yield session
+
+
+if __name__ == "__main__":
+    SQLModel.metadata.create_all(engine)
