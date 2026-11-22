@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends
-from sqlmodel import Session
-
 from database import get_session
 from dependencies import get_current_user_id
+from fastapi import APIRouter, Depends
 from schemas.base import BaseRequest, BaseResponse, EmptyData
-from schemas.reminder import ReminderConfigData
+from schemas.reminder import reminderData
 from services import reminder_service
+from sqlmodel import Session
 
 router = APIRouter(prefix="/api/reminder", tags=["Reminder (UC12)"])
 
 
-@router.post("/config/get", response_model=BaseResponse[ReminderConfigData])
+@router.post("/config/get", response_model=BaseResponse[reminderData])
 async def get_reminder_config(
     req: BaseRequest[EmptyData],
     user_id: int = Depends(get_current_user_id),
@@ -23,13 +22,13 @@ async def get_reminder_config(
         success=True,
         errorCode=None,
         message="Thành công.",
-        data=ReminderConfigData(**cfg),
+        data=reminderData(**cfg),
     )
 
 
 @router.post("/config/update", response_model=BaseResponse[None])
 async def update_reminder_config(
-    req: BaseRequest[ReminderConfigData],
+    req: BaseRequest[reminderData],
     user_id: int = Depends(get_current_user_id),
     session: Session = Depends(get_session),
 ):

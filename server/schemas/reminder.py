@@ -6,7 +6,7 @@ class ReminderItemConfig(BaseModel):
     notifyBeforeMinutes: int
 
 
-class ReminderConfigData(BaseModel):
+class reminderData(BaseModel):
     studyReminder: ReminderItemConfig
     breakReminder: ReminderItemConfig
     deadlineReminder: ReminderItemConfig

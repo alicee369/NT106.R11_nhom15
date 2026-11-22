@@ -22,8 +22,6 @@ def update_pomo_setting(
     break_min: int | None = None,
     lbreak_min: int | None = None,
     clear_lbreak: bool = False,
-    reminder_enabled: bool | None = None,
-    reminder_advance_min: int | None = None,
 ) -> PomodoroSettings:
     if focus_min is not None and focus_min <= 0:
         raise ValueError("Thời gian học phải lớn hơn 0 phút.")
@@ -31,8 +29,6 @@ def update_pomo_setting(
         raise ValueError("Thời gian nghỉ ngắn phải lớn hơn 0 phút.")
     if lbreak_min is not None and lbreak_min <= 0:
         raise ValueError("Thời gian nghỉ dài phải lớn hơn 0 phút.")
-    if reminder_advance_min is not None and reminder_advance_min < 0:
-        raise ValueError("Thời gian báo trước không được nhỏ hơn 0 phút.")
 
     settings = get_pomo_setting(db, user_id)
 
@@ -44,10 +40,6 @@ def update_pomo_setting(
         settings.lbreak_min = None
     elif lbreak_min is not None:
         settings.lbreak_min = lbreak_min
-    if reminder_enabled is not None:
-        settings.reminder_enabled = reminder_enabled
-    if reminder_advance_min is not None:
-        settings.reminder_advance_min = reminder_advance_min
 
     db.add(settings)
     db.commit()
