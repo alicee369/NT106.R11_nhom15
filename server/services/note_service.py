@@ -1,14 +1,24 @@
 import math
-from typing import Dict, Optional
+from typing import Optional
+
+from CRUD import note as note_crud
+from Models import notes
 from sqlmodel import Session
 
-_notes: Dict[int, dict] = {}
-_next_note_id = 1
+
+def _model_to_internal_dict(n: notes) -> dict:
+    return {
+        "note_id": n.id,
+        "user_id": n.user_id,
+        "title": n.title,
+        "content": n.content,
+        "is_todo_list": n.is_todo,
+        "is_done": n.is_completed,
+    }
 
 
 def list_notes(session: Session, user_id: int, page: int, limit: int) -> dict:
-    user_notes = [n for n in _notes.values() if n["user_id"] == user_id]
-    user_notes.sort(key=lambda item: item["note_id"], reverse=True)
+    user_notes = note_crud.get_notes(session, user_id)
 
     total_count = len(user_notes)
     total_pages = math.ceil(total_count / limit) if total_count > 0 else 0
@@ -18,11 +28,11 @@ def list_notes(session: Session, user_id: int, page: int, limit: int) -> dict:
     return {
         "notes": [
             {
-                "noteId": n["note_id"],
-                "title": n["title"],
-                "content": n["content"],
-                "isTodoList": n["is_todo_list"],
-                "isDone": n["is_done"],
+                "noteId": n.id,
+                "title": n.title,
+                "content": n.content,
+                "isTodoList": n.is_todo,
+                "isDone": n.is_completed,
             }
             for n in sliced
         ],
@@ -38,25 +48,21 @@ def create_note(
     content: str,
     is_todo_list: bool,
 ) -> dict:
-    global _next_note_id
-    record = {
-        "note_id": _next_note_id,
-        "user_id": user_id,
-        "title": title.strip(),
-        "content": content,
-        "is_todo_list": is_todo_list,
-        "is_done": False,
-    }
-    _notes[_next_note_id] = record
-    _next_note_id += 1
-    return record
+    n = note_crud.create_note(
+        db=session,
+        user_id=user_id,
+        title=title,
+        content=content,
+        is_todo=is_todo_list,
+    )
+    return _model_to_internal_dict(n)
 
 
 def get_note(session: Session, user_id: int, note_id: int) -> Optional[dict]:
-    record = _notes.get(note_id)
-    if not record or record["user_id"] != user_id:
+    n = session.get(notes, note_id)
+    if not n or n.user_id != user_id:
         return None
-    return record
+    return _model_to_internal_dict(n)
 
 
 def update_note(
@@ -68,20 +74,27 @@ def update_note(
     is_todo_list: bool,
     is_done: bool,
 ) -> Optional[dict]:
-    record = get_note(session, user_id, note_id)
-    if not record:
+    try:
+        n = note_crud.update_note(
+            db=session,
+            user_id=user_id,
+            note_id=note_id,
+            title=title,
+            content=content,
+            is_todo=is_todo_list,
+            is_completed=is_done,
+        )
+    except ValueError:
         return None
-
-    record["title"] = title.strip()
-    record["content"] = content
-    record["is_todo_list"] = is_todo_list
-    record["is_done"] = is_done
-    return record
+    return _model_to_internal_dict(n)
 
 
 def delete_note(session: Session, user_id: int, note_id: int) -> bool:
-    record = get_note(session, user_id, note_id)
-    if not record:
+    try:
+        return note_crud.delete_note(
+            db=session,
+            user_id=user_id,
+            note_id=note_id,
+        )
+    except ValueError:
         return False
-    del _notes[note_id]
-    return True

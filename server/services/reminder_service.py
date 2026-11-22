@@ -1,17 +1,10 @@
-import copy
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional
-from sqlmodel import Session
+from typing import List, Optional
 
+from CRUD import reminder as reminder_crud
+from Models import reminder
 from services import schedule_service
-
-_configs: Dict[int, dict] = {}
-
-DEFAULT_CONFIG = {
-    "studyReminder": {"enabled": True, "notifyBeforeMinutes": 15},
-    "breakReminder": {"enabled": True, "notifyBeforeMinutes": 5},
-    "deadlineReminder": {"enabled": True, "notifyBeforeMinutes": 60},
-}
+from sqlmodel import Session
 
 # Ánh xạ eventType của Lịch biểu sang nhóm cấu hình UC12
 EVENT_TO_REMINDER_MAP = {
@@ -25,14 +18,56 @@ def _to_iso(dt: datetime) -> str:
     return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _ensure_reminder_config(session: Session, user_id: int) -> reminder:
+    """Đảm bảo user cũ (chưa có dòng trong reminder_configs) vẫn có bản ghi mặc định."""
+    cfg = reminder_crud.get_reminder_config(session, user_id)
+    if cfg is None:
+        cfg = reminder(user_id=user_id)
+        session.add(cfg)
+        session.commit()
+        session.refresh(cfg)
+    return cfg
+
+
+def _model_to_dict(cfg: reminder) -> dict:
+    return {
+        "studyReminder": {
+            "enabled": cfg.study_enabled,
+            "notifyBeforeMinutes": cfg.study_before_min,
+        },
+        "breakReminder": {
+            "enabled": cfg.break_enabled,
+            "notifyBeforeMinutes": cfg.break_before_min,
+        },
+        "deadlineReminder": {
+            "enabled": cfg.deadline_enabled,
+            "notifyBeforeMinutes": cfg.deadline_before_min,
+        },
+    }
+
+
 def get_reminder_config(session: Session, user_id: int) -> dict:
-    saved = _configs.get(user_id)
-    return copy.deepcopy(saved) if saved is not None else copy.deepcopy(DEFAULT_CONFIG)
+    cfg = _ensure_reminder_config(session, user_id)
+    return _model_to_dict(cfg)
 
 
 def update_reminder_config(session: Session, user_id: int, config: dict) -> dict:
-    _configs[user_id] = copy.deepcopy(config)
-    return copy.deepcopy(_configs[user_id])
+    _ensure_reminder_config(session, user_id)
+    study = config.get("studyReminder", {})
+    brk = config.get("breakReminder", {})
+    deadline = config.get("deadlineReminder", {})
+
+    updated = reminder_crud.update_reminder_config(
+        db=session,
+        user_id=user_id,
+        study_enabled=study.get("enabled"),
+        study_before_min=study.get("notifyBeforeMinutes"),
+        break_enabled=brk.get("enabled"),
+        break_before_min=brk.get("notifyBeforeMinutes"),
+        deadline_enabled=deadline.get("enabled"),
+        deadline_before_min=deadline.get("notifyBeforeMinutes"),
+    )
+    return _model_to_dict(updated)
 
 
 def get_upcoming_reminders(
@@ -105,4 +140,4 @@ def get_upcoming_reminders(
     return {
         "serverTime": _to_iso(now),
         "reminders": upcoming,
-    }
+    } 
