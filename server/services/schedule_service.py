@@ -112,3 +112,8 @@ def delete_event(session: Session, user_id: int, event_id: int) -> bool:
         return False
     del _events[event_id]
     return True
+
+
+def get_user_events(session: Session, user_id: int) -> List[dict]:
+    """Trả về toàn bộ sự kiện của user (tầng service dùng chung cho Schedule & Reminder)."""
+    return [ev for ev in _events.values() if ev["user_id"] == user_id]

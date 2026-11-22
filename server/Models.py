@@ -57,8 +57,6 @@ class PomodoroSettings(SQLModel, table=True):
     focus_min: int = Field(default=25)
     break_min: int = Field(default=5)
     lbreak_min: int | None = Field(default=None)
-    reminder_enabled: bool = Field(default=True)
-    reminder_advance_min: int = Field(default=15)
 
 
 class StudyPlan(SQLModel, table=True):
@@ -131,3 +129,18 @@ class notes(SQLModel, table=True):
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"onupdate": utc_now},
     )
+
+
+class reminder(SQLModel, table=True):
+    __tablename__ = "reminder_configs"
+
+    user_id: int = Field(foreign_key="users.id", primary_key=True, ondelete="CASCADE")
+
+    study_enabled: bool = Field(default=True)
+    study_before_min: int = Field(default=15, ge=0)
+
+    break_enabled: bool = Field(default=True)
+    break_before_min: int = Field(default=5, ge=0)
+
+    deadline_enabled: bool = Field(default=True)
+    deadline_before_min: int = Field(default=60, ge=0)
