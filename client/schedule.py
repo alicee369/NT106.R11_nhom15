@@ -1,12 +1,11 @@
 import random
 from datetime import datetime, timedelta, timezone
-from PySide6.QtCore import Qt, QDateTime
+from PySide6.QtCore import Qt, QDateTime, QDate, Signal
 from PySide6.QtWidgets import (
     QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame,
     QComboBox, QDateEdit, QTableWidget, QTableWidgetItem, QHeaderView,
     QDialog, QFormLayout, QLineEdit, QDateTimeEdit, QMessageBox
 )
-from PySide6.QtCore import QDate
 from api_worker import APIWorker
 from api_client import ClientPayloadBuilder
 
@@ -126,6 +125,8 @@ class EventFormDialog(QDialog):
 
 class ScheduleWindow(QWidget):
     """UC4: Xem thời gian biểu | UC5: Thêm sự kiện | UC6: Sửa sự kiện."""
+
+    schedule_updated = Signal(list) # Signal báo ds sk vừa thay đổi
 
     def __init__(self, token: str, parent=None):
         super().__init__(parent)
@@ -336,6 +337,7 @@ class ScheduleWindow(QWidget):
             self.status_label.setText(
                 f"Hiển thị {len(self.events_cache)} sự kiện ({VIEW_LABELS.get(mode, mode)})."
             )
+            self.schedule_updated.emit(self.events_cache) # Gửi danh sách sự kiện mới nhất sang bộ nhắc nhở
 
         self._send_api(
             "/api/schedule/list",

@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout,
     QStackedWidget, #chứa nhiều page, tại 1 thời điểm chỉ hiện 1 page, các page khác nằm chờ bên dưới
@@ -13,8 +13,9 @@ from profile import ProfileWindow
 from schedule import ScheduleWindow
 from notes import NotesWindow
 from reminders import RemindersWindow
+from datetime import datetime, timezone, timedelta
 
-# [NEW] Trang khung tạm cho các chức năng chưa ghép UI hoàn chỉnh để dễ nối tiếp UC
+# Trang khung tạm cho các chức năng chưa ghép UI hoàn chỉnh để dễ nối tiếp UC
 class PlaceholderPage(QWidget):
     def __init__(self, title: str, subtitle: str, uc_tag: str, parent=None):
         super().__init__(parent)
@@ -53,8 +54,16 @@ class MainMenuPage(QWidget):
         self.nav_buttons: dict[str, QPushButton] = {}
         self.pages: dict[str, QWidget] = {}
 
+        self.notified_events: set[str] = set() #Lưu các thông báo đã hiển thị (key: "eventId_startTime") để không báo lặp lại
+
         self._build_ui()
         self.switch_page("dashboard")
+
+        # Khởi động bộ đếm kiểm tra nhắc nhở mỗi 15 giây
+        self.reminder_timer = QTimer(self)
+        self.reminder_timer.setInterval(15000)
+        self.reminder_timer.timeout.connect(self._check_reminders)
+        self.reminder_timer.start()
 
     def _build_ui(self):
         root_layout = QHBoxLayout(self)
@@ -149,7 +158,9 @@ class MainMenuPage(QWidget):
         self.pomodoro_page.mini_player_toggled.connect(self._on_pomodoro_mini_toggled)
         self._register_page("pomodoro", self.pomodoro_page)
 
-        self._register_page("schedule", ScheduleWindow(self.token))
+        self.schedule_page = ScheduleWindow(self.token)
+        self.schedule_page.schedule_updated.connect(lambda _: self._check_reminders())
+        self._register_page("schedule", self.schedule_page)
         self._register_page("notes", NotesWindow(self.token))
 
         self._register_page(
@@ -193,7 +204,9 @@ class MainMenuPage(QWidget):
         self.profile_window.account_deleted.connect(self.account_deleted.emit)
         self._register_page("profile", self.profile_window)
 
-        self._register_page("reminders", RemindersWindow(self.token))
+        self.reminders_page = RemindersWindow(self.token)
+        self.reminders_page.config_updated.connect(self._on_reminder_config_changed)
+        self._register_page("reminders", self.reminders_page)
 
     def switch_page(self, key: str):
         target = self.pages.get(key)
@@ -225,6 +238,80 @@ class MainMenuPage(QWidget):
         self._register_page("pomodoro", self.pomodoro_page)
         self.switch_page("pomodoro")
         self.pomodoro_page.show()
+
+        def _on_pomodoro_mini_toggled(self, is_mini: bool):
+            if is_mini:
+                if self.page_stack.currentWidget() is self.pomodoro_page:
+                    self.switch_page("dashboard")
+                return
+
+            self._register_page("pomodoro", self.pomodoro_page)
+            self.switch_page("pomodoro")
+            self.pomodoro_page.show()
+
+        def _on_reminder_config_changed(self, _new_config: dict):
+            self.notified_events.clear()
+            self._check_reminders()
+
+        def _check_reminders(self):
+            if not hasattr(self, "reminders_page") or not hasattr(self, "schedule_page"):
+                return
+
+            config = self.reminders_page.current_config
+            events = self.schedule_page.events_cache
+            now_utc = datetime.now(timezone.utc)
+
+            for event in events:
+                event_id = event.get("eventId")
+                raw_start = event.get("startTime")
+                event_type = str(event.get("eventType") or "STUDY").upper()
+                title = str(event.get("title") or "Sự kiện")
+
+                if not event_id or not raw_start:
+                    continue
+
+                if event_type == "DEADLINE":
+                    rule = config.get("deadlineReminder", {})
+                    type_label = "Deadline"
+                else:
+                    rule = config.get("studyReminder", {})
+                    type_label = "Lịch thi" if event_type == "EXAM" else "Giờ học"
+
+                if not rule.get("enabled", False):
+                    continue
+
+                notify_before = int(rule.get("notifyBeforeMinutes", 0))
+
+                try:
+                    cleaned = str(raw_start).replace("Z", "+00:00")
+                    start_dt = datetime.fromisoformat(cleaned)
+                    if start_dt.tzinfo is None:
+                        start_dt = start_dt.astimezone()
+                    start_utc = start_dt.astimezone(timezone.utc)
+                except ValueError:
+                    continue
+
+                remind_time_utc = start_utc - timedelta(minutes=notify_before)
+
+                if remind_time_utc <= now_utc <= start_utc:
+                    notify_key = f"{event_id}_{raw_start}_{notify_before}"
+
+                    if notify_key not in self.notified_events:
+                        self.notified_events.add(notify_key)
+                        local_time_str = start_utc.astimezone().strftime("%H:%M ngày %d/%m/%Y")
+
+                        QMessageBox.information(
+                            self,
+                            f"🔔 Nhắc nhở {type_label}",
+                            f"Sự kiện: {title}\n"
+                            f"Thời gian diễn ra: {local_time_str}\n"
+                            f"(Báo trước {notify_before} phút theo cài đặt của bạn)"
+                        )
+
+        def closeEvent(self, event):
+            if hasattr(self, "reminder_timer"):
+                self.reminder_timer.stop()
+            super().closeEvent(event)
 
 class MainWindow(QWidget):
     def __init__(self):

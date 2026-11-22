@@ -1,4 +1,5 @@
 import random
+from PySide6.QtCore import Signal 
 from PySide6.QtWidgets import (
     QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame,
     QCheckBox, QSpinBox, QGridLayout, QMessageBox
@@ -9,11 +10,19 @@ from api_client import ClientPayloadBuilder
 
 class RemindersWindow(QWidget):
     """UC12: Đọc (/api/reminder/config/get) và Cập nhật (/api/reminder/config/update) cấu hình nhắc nhở."""
+    config_updated = Signal(dict) # Signal phát ra mỗi khi cấu hình được tải hoặc lưu thành công
 
     def __init__(self, token: str, parent=None):
         super().__init__(parent)
         self.token = token
         self.workers: list[APIWorker] = []
+
+        #Lưu cấu hình mặc định trong bộ nhớ
+        self.current_config = {
+            "studyReminder": {"enabled": False, "notifyBeforeMinutes": 5},
+            "breakReminder": {"enabled": False, "notifyBeforeMinutes": 5},
+            "deadlineReminder": {"enabled": False, "notifyBeforeMinutes": 30},
+        }
 
         self._build_ui()
         self._apply_styles()
@@ -125,6 +134,8 @@ class RemindersWindow(QWidget):
             self._apply_item(data.get("studyReminder"), self.study_enabled, self.study_minutes, default_min=5)
             self._apply_item(data.get("breakReminder"), self.break_enabled, self.break_minutes, default_min=5)
             self._apply_item(data.get("deadlineReminder"), self.deadline_enabled, self.deadline_minutes, default_min=30)
+            
+            self._sync_local_config() # cập nhật cache, phát signal đồng bộ
             self.status_label.setText("Đã đồng bộ cấu hình từ máy chủ.")
 
         self._send_api(
@@ -165,6 +176,7 @@ class RemindersWindow(QWidget):
 
         def on_saved(res: dict):
             self.save_btn.setEnabled(True)
+            self._sync_local_config() # Cập nhật cache và phát tín hiệu đồng bộ ngay khi bấm Lưu
             self.status_label.setText("Đã lưu cấu hình nhắc nhở.")
             QMessageBox.information(self, "Thành công", res.get("message") or "Đã lưu cấu hình nhắc nhở.")
 
@@ -175,6 +187,24 @@ class RemindersWindow(QWidget):
             on_saved,
             lambda _: self.save_btn.setEnabled(True),
         )
+
+    # Hàm gom cấu hình hiện tại trên giao diện và phát Signal
+    def _sync_local_config(self):
+        self.current_config = {
+            "studyReminder": {
+                "enabled": self.study_enabled.isChecked(),
+                "notifyBeforeMinutes": int(self.study_minutes.value()),
+            },
+            "breakReminder": {
+                "enabled": self.break_enabled.isChecked(),
+                "notifyBeforeMinutes": int(self.break_minutes.value()),
+            },
+            "deadlineReminder": {
+                "enabled": self.deadline_enabled.isChecked(),
+                "notifyBeforeMinutes": int(self.deadline_minutes.value()),
+            },
+        }
+        self.config_updated.emit(self.current_config)
 
     def _apply_styles(self):
         self.setStyleSheet("""
