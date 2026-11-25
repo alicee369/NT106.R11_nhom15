@@ -6,7 +6,7 @@ FilterType = Literal["DAY", "WEEK", "MONTH"]
 
 class StatisticViewRequestData(BaseModel):
     filterType: FilterType
-    timezone: str = "Asia/Ho_Chi_Minh"
+    timezone: Optional[str] = "Asia/Ho_Chi_Minh"
     subjectTag: Optional[str] = None
 
 
@@ -19,4 +19,3 @@ class StatisticChartItem(BaseModel):
 class StatisticViewResponseData(BaseModel):
     totalStudyMinutes: int
     chartData: List[StatisticChartItem]
-    

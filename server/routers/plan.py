@@ -50,6 +50,16 @@ async def create_plan(
             data=None,
         )
 
+    if len(plan_name) > 150:
+        return BaseResponse(
+            action="PLAN_CREATE",
+            requestId=req.requestId,
+            success=False,
+            errorCode="PLAN_EMPTY_INFO",
+            message="Tên kế hoạch không được vượt quá 150 ký tự.",
+            data=None,
+        )
+
     created = plan_service.create_plan(
         session=session,
         user_id=user_id,
@@ -80,6 +90,16 @@ async def update_plan(
             success=False,
             errorCode="PLAN_NOT_FOUND",
             message="Thông tin trống hoặc không tìm thấy kế hoạch.",
+            data=None,
+        )
+
+    if len(plan_name) > 150:
+        return BaseResponse(
+            action="PLAN_UPDATE",
+            requestId=req.requestId,
+            success=False,
+            errorCode="PLAN_NOT_FOUND",
+            message="Tên kế hoạch không được vượt quá 150 ký tự.",
             data=None,
         )
 
