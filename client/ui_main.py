@@ -14,6 +14,8 @@ from schedule import ScheduleWindow
 from notes import NotesWindow
 from reminders import RemindersWindow
 from datetime import datetime, timezone, timedelta
+from goals import GoalsWindow
+from statistics import StatisticsWindow
 
 # Trang khung tạm cho các chức năng chưa ghép UI hoàn chỉnh để dễ nối tiếp UC
 class PlaceholderPage(QWidget):
@@ -163,23 +165,13 @@ class MainMenuPage(QWidget):
         self._register_page("schedule", self.schedule_page)
         self._register_page("notes", NotesWindow(self.token))
 
-        self._register_page(
-            "goals",
-            PlaceholderPage(
-                title="Mục tiêu & Kế hoạch học tập",
-                subtitle="Thiết lập chiến dịch học tập cá nhân hóa và theo dõi tiến độ.",
-                uc_tag="UC13 – UC15",
-            ),
-        )
+        self.goals_page = GoalsWindow(self.token)
+        self._register_page("goals", self.goals_page)
 
-        self._register_page(
-            "statistics",
-            PlaceholderPage(
-                title="Thống kê trực quan & Ước lượng GPA",
-                subtitle="Xem biểu đồ thời gian học và tính điểm mục tiêu học phần.",
-                uc_tag="UC16, UC18",
-            ),
-        )
+        self.statistic_page = StatisticsWindow(self.token)
+        self._register_page ("statistics", self.statistic_page)
+        # Tự làm mới biểu đồ thống kê khi phiên Pomodoro kết thúc
+        self.pomodoro_page.session_stop.connect(lambda _data: self.statistics_page.load_chart())
 
         self._register_page(
             "achievements",
