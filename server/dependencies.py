@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 from typing import Optional
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlmodel import Session, select
 from sqlmodel import Session, col, select
 from database import get_session
 from Models import LoginSession

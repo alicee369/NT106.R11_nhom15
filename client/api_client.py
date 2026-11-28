@@ -1,5 +1,5 @@
 import itertools
-from typing import Optional
+from typing import List, Optional
 
 
 class ClientPayloadBuilder:
@@ -38,6 +38,15 @@ class ClientPayloadBuilder:
         "REMINDER_CONFIG_GET": "/api/reminder/config/get",
         "REMINDER_CONFIG_UPDATE": "/api/reminder/config/update",
         "REMINDER_GET_UPCOMING": "/api/reminder/upcoming",
+        # UC13 - UC15: Study Plan
+        "PLAN_GET_LIST": "/api/plan/list",
+        "PLAN_CREATE": "/api/plan/create",
+        "PLAN_UPDATE": "/api/plan/update",
+        "PLAN_DELETE": "/api/plan/delete",
+        # UC16: Statistic
+        "STATISTIC_GET_CHART": "/api/statistic/view",
+        # UC18: Score & GPA
+        "SCORE_ESTIMATE_GPA": "/api/score/estimate",
     }
 
     @classmethod
@@ -347,5 +356,86 @@ class ClientPayloadBuilder:
             "data": {
                 "windowMinutes": window_minutes,
                 "onlyDueNow": only_due_now,
+            },
+        }
+# --- UC13 - UC15: Study Plan ---
+    @staticmethod
+    def build_plan_list_payload(req_id: int) -> dict:
+        return {
+            "action": "PLAN_GET_LIST",
+            "requestId": req_id,
+            "data": {},
+        }
+
+    @staticmethod
+    def build_plan_create_payload(
+        req_id: int, plan_name: str, target_minutes: int
+    ) -> dict:
+        return {
+            "action": "PLAN_CREATE",
+            "requestId": req_id,
+            "data": {
+                "planName": plan_name,
+                "targetMinutes": target_minutes,
+            },
+        }
+
+    @staticmethod
+    def build_plan_update_payload(
+        req_id: int, plan_id: int, plan_name: str, target_minutes: int
+    ) -> dict:
+        return {
+            "action": "PLAN_UPDATE",
+            "requestId": req_id,
+            "data": {
+                "planId": plan_id,
+                "planName": plan_name,
+                "targetMinutes": target_minutes,
+            },
+        }
+
+    @staticmethod
+    def build_plan_delete_payload(req_id: int, plan_id: int) -> dict:
+        return {
+            "action": "PLAN_DELETE",
+            "requestId": req_id,
+            "data": {"planId": plan_id},
+        }
+
+    # --- UC16: Statistic ---
+    @staticmethod
+    def build_statistic_view_payload(
+        req_id: int,
+        filter_type: str = "WEEK",
+        timezone_str: str = "Asia/Ho_Chi_Minh",
+        subject_tag: Optional[str] = None,
+    ) -> dict:
+        return {
+            "action": "STATISTIC_GET_CHART",
+            "requestId": req_id,
+            "data": {
+                "filterType": filter_type,
+                "timezone": timezone_str,
+                "subjectTag": subject_tag,
+            },
+        }
+
+    # --- UC18: Score & GPA ---
+    @staticmethod
+    def build_score_estimate_payload(
+        req_id: int,
+        current_scores: List[dict],
+        remaining_weight_percent: float,
+        target_gpa: float,
+        scale: float = 10.0,
+    ) -> dict:
+        return {
+            "action": "SCORE_ESTIMATE_GPA",
+            "requestId": req_id,
+            "data": {
+                "currentScores": current_scores,
+                "remainingWeightPercent": remaining_weight_percent,
+                "targetGPA": target_gpa,
+                "scale": scale,
             },
         }
